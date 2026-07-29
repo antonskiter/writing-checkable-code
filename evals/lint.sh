@@ -20,7 +20,7 @@ run() {
 }
 
 run python  ruff       ruff check python/
-run js      eslint     eslint -c ../eslint.config.mjs js/orders.js
+run js      eslint     eslint -c eslint.config.mjs js/orders.js
 run lua     luacheck   luacheck --no-color lua/ledger.lua
 run bash    shellcheck shellcheck -S warning bash/deploy.sh
 run go      go         go vet ./go/...

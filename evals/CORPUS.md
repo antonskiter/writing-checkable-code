@@ -1,4 +1,10 @@
-# Fixture map
+# Verdict corpus
+
+Development apparatus, not part of the skill. `evals/` is excluded when the
+skill is packaged (`package_skill.py` strips it at the root) and by
+`.gitattributes export-ignore` from release archives; a `git clone` still
+carries it. The usage-time half of this file — where each row must stay silent —
+is kept as `references/calibration.md`, which ships.
 
 Bait code with known verdicts, anchored to function names. An edit to a SKILL.md
 check is validated by re-running it here: every "fires" entry must still fire,

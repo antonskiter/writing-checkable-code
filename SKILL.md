@@ -55,9 +55,7 @@ Fail the build on:
 
 ## When a verdict is unclear
 
-`fixtures/MAP.md` records, per rule, the code each one fires on and the code it
-must stay silent on, in nine languages. Read the entry for the row in doubt —
-the silent column decides the false positives. The fixtures are bait, written to
-be caught: never copy their shape, and never let a resemblance stand in for
-running the check. `references/rejected.md` holds the rules that failed testing
-and the evidence that killed them; consult it before adding one.
+`references/calibration.md` records, per row, the shape it is drawn to and must
+not fire on, with the clause that spares it. Read the entry for the row in
+doubt; each one was a false positive before it was a clause. A resemblance to a
+recorded shape never stands in for running the check.
