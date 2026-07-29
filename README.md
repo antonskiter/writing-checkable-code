@@ -13,3 +13,8 @@ git clone https://github.com/antonskiter/writing-checkable-code \
 The skill loads when a design decision is in play — splitting a module, naming a
 thing, placing a setting, handling a failure — and when a conditional chain, a
 duplicated fact, or a passing test suite appears.
+
+`fixtures/` holds bait code in Python, Go and TypeScript with known verdicts
+per rule (`fixtures/MAP.md`); an edit to a check is validated by re-running it
+there. `references/rejected.md` records rules tried and removed, with the
+evidence.
