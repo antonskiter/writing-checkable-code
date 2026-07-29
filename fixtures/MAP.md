@@ -6,7 +6,33 @@ every "silent" entry must stay silent.
 
 Every fixture parses or compiles clean under its own toolchain — the bait is
 valid code, not broken code. Toolchains used: python3, go, tsc --strict,
-lua5.4, node, bash -n with shellcheck, swiftc -typecheck, javac 21, kotlinc 2.1.
+lua5.4, node, bash -n, swiftc -typecheck, javac 21, kotlinc 2.1.
+
+`lint.sh` runs each language's standard linter over these files. **Every finding
+it prints is intentional bait, listed below under the rule it baits.** A finding
+absent from this file is a defect in the fixture and is fixed there, not
+recorded. Missing linters are reported as SKIPPED with a non-zero exit, never
+passed over in silence.
+
+What the linters find, and what they miss:
+
+| linter | code | rule it corroborates |
+|---|---|---|
+| ruff | `S110`, `BLE001` | L1 (`except Exception: pass`) |
+| eslint | `no-empty`, `no-unused-vars` | L1 (`catch (e) {}`) |
+| luacheck | `setting non-standard global` | L6 (`RETRY_LIMIT`) |
+| luacheck | `variable 'region' is never accessed` | L3 (dead write) |
+| luacheck | `unused argument 'entry'` ×2 | none — a side effect of S2's stub handlers, which must keep identical bodies |
+| shellcheck | `SC2034` ×2 | L3 (`RETRY_LIMIT`, `REGION` unused) |
+
+`go vet`, `swiftc`, `javac -Xlint:all` and `kotlinc` report nothing on these
+files at all. No linter in any of the nine languages finds S1, S2, S3, M1, M2,
+M4, T1, T2, T4, F3, F4, N1, N2, X1, X2 or X4 — the bait for those rules compiles
+and lints clean, which is the case for the document existing.
+
+Ruff also reports `PLR0917` (7 positional arguments) on `render_row` under
+`--select ALL`. No rule covers parameter count: two attempts at one failed
+testing and are recorded in `references/rejected.md`.
 
 ## python/ingest.py + worker.py
 

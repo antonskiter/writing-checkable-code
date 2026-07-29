@@ -1,6 +1,6 @@
-import os
 import json
 import logging
+import os
 
 RETRY_TIMEOUT = 30
 
@@ -10,9 +10,7 @@ log = logging.getLogger(__name__)
 def validate_record(record):
     if "id" not in record:
         return False
-    if not isinstance(record.get("amount"), (int, float)):
-        return False
-    return True
+    return isinstance(record.get("amount"), (int, float))
 
 
 def handle_event(event):
