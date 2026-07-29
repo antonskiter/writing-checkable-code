@@ -34,7 +34,10 @@ Silent:
 
 Fires:
 - T1 — `Interval(60, 0)` constructs; the value reaches `render_row` arithmetic
-- X2 — all three tests pass after their subjects' bodies are deleted
+- X2 — executed: 5 of 5 mutants survive the suite (`rjust`->`ljust`, span sign
+  flip, `"holiday"`->`"past"`, `>`->`>=`, `<=`->`<`). Body deletion is not
+  decisive here: stubbing to a same-typed constant leaves all three tests green,
+  stubbing to `None` fails two — which is why X2 checks mutants
 - X1, L2 — `render_row` silently left-aligns any `align` other than `"right"`
 
 - F4 — executed: `classify` tests `start > now` before `start in holidays`, so a

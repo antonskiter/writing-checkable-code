@@ -39,3 +39,21 @@ requires new evidence against its entry.
   meaning, concept — and therefore authors the verdict. Each was replaced by a
   comparison against an artifact that exists independently: the body, the
   signature, the contract, the diff, a run.
+- **Wordings that accept prose as the artifact.** Six rules were escapable by
+  the author writing a claim rather than an artifact: a "declared bound" as a
+  comment, a "declared extension point" naming the whole module, "declared
+  layers" deleted so nothing can be misplaced, an owner and expiry already
+  past, "free to diverge" asserted about future requirements. The document now
+  fixes the term once: a declaration is an artifact a run can contradict.
+- **`without being read`** as L1's qualifier. Satisfied by logging the error
+  and swallowing it, which is worse than the discard it was written to catch —
+  the marker is consumed and the failure still reaches no caller.
+- **`exhaustive`** unqualified in T3's exemption. A `switch` with a `default`
+  arm is exhaustive at runtime, so the exemption covered the shape it exists to
+  exclude; verified with `tsc --strict`, where adding a union member to such a
+  switch compiles clean while a `never`-checked match fails the build.
+- **Deletion as X2's only probe.** A body stubbed to a same-typed constant
+  keeps type-shaped assertions green, while stubbing to null fails them, so the
+  same subject passes or fails on how the deletion is spelled. Mutation decides
+  it: on `fixtures/python`, 5 of 5 mutants survive a suite that deletion rates
+  as evidence.
