@@ -16,6 +16,7 @@ Fires:
 - M2 — `PERSIST_TIMEOUT` read inside `_persist`, below the entry point
 - M3 — `fetch_with_retry` reaches `requests` and the clock; `stamp` reaches the clock
 - M4, T3 — `handle_event`: elif chain on `event["type"]`, no declared extension point
+- F2 — the elif chain dispatches on one value, so it keeps McCabe's exemption
 - T1 — `{"type": "quux"}` constructs and reaches `_on_created`
 - T2 — `validate_record` returns bool; `_persist` accepts the same raw dict
 - N1 — `process`, `stamp`
@@ -35,6 +36,10 @@ Fires:
 - T1 — `Interval(60, 0)` constructs; the value reaches `render_row` arithmetic
 - X2 — all three tests pass after their subjects' bodies are deleted
 - X1, L2 — `render_row` silently left-aligns any `align` other than `"right"`
+
+- F4 — executed: `classify` tests `start > now` before `start in holidays`, so a
+  future holiday never classifies as a holiday; permuting the two branches turns
+  `Interval(500,600), now=100, holidays={500}` from "future" into "holiday"
 
 Silent:
 - T3, M4 — `classify`: unrelated predicates, no kind, no cases
