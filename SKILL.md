@@ -52,3 +52,12 @@ Fail the build on:
 - **L4** a comment whose subject is not the current code — a former version, a rejected alternative, or a schedule
 - **L5** a suppressed, disabled or cast-away check with no owner, or with an expiry absent or already past — at the site, or in the configuration exempting the site
 - **L6** mutable state a body reaches without receiving it — a module or static binding, a cell held by a module-level closure, a singleton behind an accessor, the environment — that any code writes after start-up
+
+## When a verdict is unclear
+
+`fixtures/MAP.md` records, per rule, the code each one fires on and the code it
+must stay silent on, in nine languages. Read the entry for the row in doubt —
+the silent column decides the false positives. The fixtures are bait, written to
+be caught: never copy their shape, and never let a resemblance stand in for
+running the check. `references/rejected.md` holds the rules that failed testing
+and the evidence that killed them; consult it before adding one.
