@@ -14,7 +14,7 @@ The skill loads when a design decision is in play — splitting a module, naming
 thing, placing a setting, handling a failure — and when a conditional chain, a
 duplicated fact, or a passing test suite appears.
 
-`fixtures/` holds bait code in Python, Go and TypeScript with known verdicts
-per rule (`fixtures/MAP.md`); an edit to a check is validated by re-running it
-there. `references/rejected.md` records rules tried and removed, with the
-evidence.
+`fixtures/` holds bait code in Python, Go, TypeScript, JavaScript, Lua, Bash,
+Swift, Java and Kotlin with known verdicts per rule (`fixtures/MAP.md`); an
+edit to a check is validated by re-running it there. `references/rejected.md`
+records rules tried and removed, with the evidence.
