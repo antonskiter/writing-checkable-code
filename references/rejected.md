@@ -57,3 +57,15 @@ requires new evidence against its entry.
   same subject passes or fails on how the deletion is spelled. Mutation decides
   it: on `fixtures/python`, 5 of 5 mutants survive a suite that deletion rates
   as evidence.
+- **`however the predicates are spelled`** alone in T3. Broadened "the single
+  value every branch tests" to any value appearing in every branch, so a chain
+  comparing one value against three different others became a kind dispatch;
+  it also disagreed with M4, which had kept the older wording. Both rows now
+  say a value compared against different others tests no kind.
+- **`every body is unmeasured, not passing`** in F2. Reached before the
+  exemption, so with no complexity checker installed the row returned a finding
+  on every body in every fixture. The absence of the checker is one finding
+  about the build.
+- **`written anywhere but its declaration`** in L6. Undecidable between "state
+  that anyone writes" and "the write is the offence", so a body merely reading
+  `os.environ` sat between L6 and M2 with no rule deciding which.

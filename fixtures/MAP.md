@@ -42,8 +42,11 @@ Fires:
 - M2 — `PERSIST_TIMEOUT` read inside `_persist`, below the entry point
 - M3 — `fetch_with_retry` reaches `requests` and the clock; `stamp` reaches the clock
 - M4, T3 — `handle_event`: elif chain on `event["type"]`, no declared extension point
-- F2 — the elif chain dispatches on one value, so it keeps McCabe's exemption
-- T1 — `{"type": "quux"}` constructs and reaches `_on_created`
+- F2 — silent per body: the elif chain is a flat dispatch on one value. No
+  complexity checker is installed, so the absence itself is the finding
+- T1 — `validate_record` names non-numeric amounts, yet `_persist({"id":"x","amount":"oops"})`
+  returns `{'id': 'x', 'amount': 'oops', 'timeout': 30}`. (The `"quux"` event is not a T1
+  witness: the else branch handles it, so no site names it. It fires L2 and T3/M4.)
 - T2 — `validate_record` returns bool; `_persist` accepts the same raw dict
 - N1 — `process`, `stamp`
 - X1 — `process` returns None for a bad record; "bad record" omits the value;
@@ -72,7 +75,7 @@ Fires:
 
 Silent:
 - T3, M4 — `classify`: unrelated predicates, no kind, no cases
-- S3 — report → orders only; both units take numbers
+- S3 — no cycle; both units take numbers. Placement is unverified: no layer map exists
 
 ## go/store.go + handler.go
 
@@ -88,7 +91,7 @@ Fires:
 - L6 — `region` reassigned in `init` and `SetRegion`; `cache` mutated by `Put`
 
 Silent:
-- S3 — store.go level 1, handler.go level 2, no cycle
+- S3 — store.go level 1, handler.go level 2, no cycle. Placement unverified: no layer map
 
 ## ts/orders.ts + report.ts
 
@@ -112,12 +115,12 @@ Silent:
 
 Fires:
 - S1 — the 30s deadline as a literal in `persist`, unrelated to `RETRY_LIMIT`
-- S3 — `RETRY_LIMIT` is a global, reachable and writable from any unit
 - M3 — `persist` and `stamp` reach `os.time`
 - M4, T3 — `handle`: if/elseif on `entry.kind`, no declared extension point
 - T1, T2 — `validate` returns a boolean and accepts `amount = -5`; `persist`
   takes the same raw table
-- N1 — `process` names no operation; `ids` returns keys in hash order
+- N1 — `stamp` mutates its argument. (`ids` returning hash order is X4's subject,
+  not a write the name omits)
 - X1 — `process` returns nil for bad input; "bad record" omits the value
 - X4 — `ids` differs across fresh processes (executed: `theta,eta,zeta,…` then
   `alpha,theta,beta,…`); `stamp` embeds the clock
@@ -134,7 +137,8 @@ Fires:
 - S1 — 30s appears in `fetch_manifest`'s `--max-time` and `run`'s deadline
 - M3 — `fetch_manifest` reaches the network; `run` and `stamp` read the clock
 - M4, T3 — `handle_target`: if/elif on `$target`
-- N1 — `fetch_manifest` writes a file and echoes it; `run` retries nothing
+- N1 — `fetch_manifest` writes `/tmp/manifest.json`. (`run` retrying nothing is a
+  promise the name makes, which this check does not reach)
 - X1 — executed: `fetch_manifest` against an unreachable host exits 0, the
   failure swallowed by `return 0`; "bad manifest" omits the value
 - X4 — executed: `stamp x` twice gives `x@1785346174` / `x@1785346175`
@@ -159,8 +163,9 @@ Fires:
   module-level `Map` and returns a rounded copy
 - X1 — executed: `ingest("{{{")` and `ingest("{}")` both return null;
   `load("{\"a\":1}")` returns the object itself despite an array contract
-- X4 — `stamp` embeds the clock; `totals` returns integer-like keys first
-  (executed: ids `b,10,a,2` come back as `2,10,b,a`)
+- X4 — `stamp` embeds the clock. `totals` reorders integer-like keys first
+  (executed: ids `b,10,a,2` come back as `2,10,b,a`) but does so deterministically,
+  so X4 is silent on it and N1 carries it
 - L1 — `catch {}` in `ingest`; `catch (e) {}` in `load`
 - L2 — executed: `handle({kind:"deleted"})` returns `"ok"` from the default arm
 - L6 — `currentRegion` reassigned by `setRegion`; `cache` mutated by `persist`
@@ -200,11 +205,13 @@ Fires:
   boolean and `persist` takes the same raw `Entry`
 - T4 — executed: `CappedStore` fails the `Store` put-then-get contract
   (`Store: true`, `CappedStore: false`)
-- N1 — `process` names no operation; `total` throws rather than reporting
+- N1 — `renderRow` pads by grapheme count, not display width. (`total` throwing is
+  neither a write nor a wait)
 - X1 — executed: `process` with a null id prints "bad record" and returns null;
   `Store.total("missing")` raises `NullPointerException` naming a Map internal,
   not the id; `renderRow(align="up")` silently left-aligns
-- X4 — `stamp` embeds the clock; `ids()` returns `HashMap` key order
+- X4 — `stamp` embeds the clock. (`ids()` does not fire: executed, `HashMap` order
+  was identical across 7 runs)
 - L1 — `catch (Exception e) {}` in `process`
 - L2 — `handle` else-branch routes an unknown kind to `onCreated`
 - L6 — `static String region` reassigned by `setRegion`
@@ -224,7 +231,8 @@ Fires:
 - N1 — `process` names no operation
 - X1 — executed: `process(null, 5.0)` prints "bad record" and returns null;
   `renderRow(align="up")` silently left-aligns; `require` message omits the id
-- X4 — `stamp` embeds the clock; `ids()` returns map key order
+- X4 — `stamp` embeds the clock. (`ids()` does not fire: `mutableMapOf` is a
+  `LinkedHashMap`, identical across 7 runs)
 - L1 — `catch (e: Exception) { null }` in `process`
 - L2 — `handle` else-branch routes an unknown kind to `onCreated`
 - L6 — top-level `var region`
@@ -232,3 +240,22 @@ Fires:
 Silent:
 - T3 — `apply`'s `when` over the sealed `Entry` is exhaustive over a closed sum
 - N2 — `Store.ids` and `Ledger` names map one-to-one
+
+## python/billing.py
+
+Bait for the four rules the corpus did not reach. Fires:
+- L4 — three comments whose subject is not the current code: a former version
+  ("used to round each line"), a rejected alternative ("we considered ... but
+  rejected it"), and a schedule ("TODO: ... next quarter")
+- F1 — executed: `invoice_total` reaches `line_total` directly and through
+  `subtotal`, a level it had already delegated
+- F3 — executed: `Cart.total` is derived and stored; `add(40)` moves the source
+  to 100 while `read()` still returns 60, with no assertion and no bound
+- X3 — executed: `Cart`'s comment says "whole cents" and it is built from
+  floats (`[1.5, 2.25]` -> 3.75); `apply_discount`'s comment does not say `pct`
+  is a fraction, so `apply_discount(100, 20)` returns -1900
+- T1 — negative and non-numeric amounts construct and reach the arithmetic
+
+Silent:
+- F4 — `invoice_total`'s two branches cannot both match
+- S1 — `TAX_RATE` has one home
