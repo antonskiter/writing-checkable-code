@@ -2,3 +2,4 @@ __pycache__
 tmp/
 .cache/
 .claude/
+.ruff_cache/
