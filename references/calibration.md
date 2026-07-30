@@ -16,6 +16,7 @@ the rest of the file is not needed.
 - [F4 — branches that cannot both match](#f4)
 - [N2 — distinct names for distinct contracts](#n2)
 - [L6 — a binding nothing writes after start-up](#l6)
+- [X5 — findings one change clears together](#x5)
 
 ## S1
 
@@ -89,3 +90,19 @@ across genuinely distinct operations is not a homonym.
 A module-level constant and a module-level logger handle, neither reassigned nor
 mutated after the module loads. **Silent.** The rule's subject is state written
 after start-up; a binding merely *read* by a body belongs to M2 and M3.
+
+## X5
+
+Several rows firing at one site, all of them cleared by one change. An elif chain
+on an event kind hosts M4, T3 and L2; replacing it with a table and a strict
+lookup clears all three. **Silent as a grouping.** Executed: the table alone
+leaves L2 firing — an unknown kind still routes to a real case — and a strict
+`else: raise` alone leaves M4 and T3 firing, the chain intact. Two smaller
+changes each clear part of the set, so the clause *no smaller change clears any
+of them alone* holds, and these are two defects reported separately.
+
+One site is not the test, and neither is one file. Two homes of a value in
+separate modules — `RETRY_LIMIT` beside `MAX_RETRIES`, firing S1 and N2 — are one
+defect: deleting the second home clears both, and no smaller change clears N2
+alone. Two absent build gates — no complexity checker and no layer map, firing F2
+and S3 — are two, because installing either clears its row by itself.

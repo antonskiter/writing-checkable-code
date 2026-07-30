@@ -36,11 +36,11 @@ registry, a test, a build gate. A comment asserting one is not a declaration.
 | **X2** Evidence | A claim about code is made by something that runs. | Mutate the subject — each literal, comparison and branch — and rerun: a surviving mutant is a fact the check does not cover. Delete the subject: still passing means it proved nothing. With nothing that runs, every claim is unverified. |
 | **X3** Record | An interface comment states what the signature does not give — what the unit does, argument meaning, ordering, edge behaviour (Ousterhout). | Write a call from the signature and comment alone, then run it: a wrong result, or a detail you had to take from the body — units, ordering, empty or absent input — is missing from the comment. |
 | **X4** Determinism | The same inputs produce the same output. | Run it twice in fresh processes, from different directories, and diff what each emits: return value, stdout, files written, bytes sent. A unit emitting nothing observable is unverified. |
+| **X5** Convergence | Findings are one defect where one change clears every one of them and no smaller change clears any of them alone (Zeller & Hildebrandt, 1-minimality). | Apply the change as a diff, then re-decide each row by its own check — a run where the check runs, the comparison the check names where it does not — recording what each returns per site, before and after. A site no longer named is cleared; a row moving from firing to unverified is not. A site still named is a separate defect; a row that begins firing is a defect the change introduced; a finding some smaller change clears alone was never one of the group. Removing a unit instead of repairing it is L3's finding, not a change. An unapplied change, or an untried smaller one, groups nothing: the grouping is unverified and each finding is reported alone. |
 
-Rows firing on the same lines are one defect only where one row's remedy repairs
-the rest; report it there, and report the others separately. Order what remains by
-consequence: a wrong answer, then a state that produces one, then a missing seam,
-then missing evidence.
+Report each group at the row whose check the change answers, naming its sites.
+Order what remains by consequence: a wrong answer, then a state that produces
+one, then a missing seam, then missing evidence.
 
 ## Mechanical
 
