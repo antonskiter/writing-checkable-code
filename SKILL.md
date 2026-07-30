@@ -8,10 +8,14 @@ description: Use when writing or reviewing code and a design decision is in play
 A declaration is an artifact a run can contradict — a type, a schema, a
 registry, a test, a build gate. A comment asserting one is not a declaration.
 
+A search for a second home, a reader or an entry point is over the whole tree
+the build reads at the revision under review — every language, schema, manifest
+and generated source — never the diff alone.
+
 | | Contract | Check |
 |---|---|---|
-| **S1** System | Every fact — value, rule, decision — has one home (Hunt & Thomas, DRY). | Change the one home: anything still behaving by the old value, or still stating it, has a second. Search what the build ships but never runs — schema, manifest, another language's source. A test restating the value is the check, not a second home, provided it runs, fails when the one home changes, and does not supply the value to the code under test. |
-| **S2** System | A rule has one implementation (Beck, once and only once). | Change the rule at one copy, then feed one input the change affects to every entry point that must answer it: two answers is one rule in two homes. Copies no single input reaches are alike by coincidence, and fusing them welds two units into one (Yourdon & Constantine, coincidental cohesion). |
+| **S1** System | Every fact — value, rule, decision — has one home (Hunt & Thomas, DRY). | Change the one home: anything still behaving by the old value, or still stating it, has a second. Search what the build ships but never runs — schema, manifest, another language's source. A test restating the value is the check, not a second home, provided it runs, fails when the one home changes, and does not supply the value to the code under test. A second home decides the row wherever it was found; one home is a claim over the whole tree, and without that search the fact is unverified, not single-homed. |
+| **S2** System | A rule has one implementation (Beck, once and only once). | Change the rule at one copy, then feed one input the change affects to every entry point that must answer it: two answers is one rule in two homes. Copies no single input reaches are alike by coincidence, and fusing them welds two units into one (Yourdon & Constantine, coincidental cohesion). The entry points that must answer it are the whole tree's, not the diff's: two answers from any two of them is the finding, and without reaching the rest the rule is unverified beyond those exercised. |
 | **S3** System | Dependencies point one way: every unit takes a level number (Parnas; Lakos, levelization). | Number each unit one above the highest unit it uses: a unit in a cycle takes no number, and neither unit in it can be tested alone. Against a declared layer map, a number above the declared layer is a misplaced unit; with no map, only cycles are checked and placement is unverified. |
 | **M1** Module | A simple interface over substantial work (Parnas; Ousterhout, deep modules). | Read the signature and its comment: a parameter, field or ordering requirement whose value the caller can obtain only from this module is a leak. |
 | **M2** Module | Configuration and collaborators arrive resolved, assembled at the entry point. | Run the unit twice in one process under two values of the setting: if the second cannot reach it except by mutating the environment, a global or a cache, the setting is not resolved at the entry point. |
@@ -48,7 +52,7 @@ Fail the build on:
 
 - **L1** an error discarded, or turned into a null, a default or a crash — logging it is discarding it; it is read only where its value reaches the caller or selects the recovery
 - **L2** a value produced for an unrecognised kind — returned, dispatched to, substituted before the branch, or left to a missing arm
-- **L3** a symbol no entry point reaches — delete it together with everything only it reaches, rebuild and rerun, nothing changes. A test-only caller is not reachability
+- **L3** a symbol no entry point reaches — delete it together with everything only it reaches, rebuild and rerun, nothing changes. A test-only caller is not reachability. Entry points are the tree's, not the diff's: without that rebuild over the tree, reachability is unverified and the symbol is not reported dead. Nothing to rerun is X2's finding, not a reason to withhold this one
 - **L4** a comment whose subject is not the current code — a former version, a rejected alternative, or a schedule
 - **L5** a suppressed, disabled or cast-away check with no owner, or with an expiry absent or already past — at the site, or in the configuration exempting the site
 - **L6** mutable state a body reaches without receiving it — a module or static binding, a cell held by a module-level closure, a singleton behind an accessor, the environment — that any code writes after start-up

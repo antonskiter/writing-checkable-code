@@ -10,6 +10,12 @@ Bait code with known verdicts, anchored to function names. An edit to a SKILL.md
 check is validated by re-running it here: every "fires" entry must still fire,
 every "silent" entry must stay silent.
 
+Each section below is one tree under review, and the rows that search a tree —
+S1, S2, L3, N2 — are decided within it. The nine language directories are
+unrelated programs that share a parent, so a fact recurring across two of them
+is not a second home: the 30-second deadline is eight separate S1 findings, one
+per tree, not one fact in twelve homes.
+
 Every fixture parses or compiles clean under its own toolchain — the bait is
 valid code, not broken code. Toolchains used: python3, go, tsc --strict,
 lua5.4, node, bash -n, swiftc -typecheck, javac 21, kotlinc 2.1.
@@ -213,7 +219,10 @@ Silent:
 ## java/Ledger.java
 
 Fires:
-- S1 — `RETRY_LIMIT` has no reader
+- L3 — `RETRY_LIMIT` has no reader: executed, deleting it and rebuilding with
+  `javac -Xlint:all` is clean and every other verdict is unchanged. Not S1 —
+  within this tree nothing else states 3, so changing the one home changes
+  nothing and the fact has no second home
 - M4, T3 — `handle`: if/else-if on `entry.kind`
 - T1, T2 — `Entry` is a mutable bag of public fields; `validate` returns a
   boolean and `persist` takes the same raw `Entry`
@@ -236,7 +245,9 @@ Silent:
 ## kotlin/Ledger.kt
 
 Fires:
-- S1 — `RETRY_LIMIT` has no reader; 30_000 is a literal in `fetchDeadline`
+- S1 — 30_000 is a literal in `fetchDeadline`
+- L3 — `RETRY_LIMIT` has no reader: executed, deleting it and rebuilding with
+  `kotlinc` exits 0. Not S1 — nothing else in this tree states 3
 - M3 — `stamp` and `fetchDeadline` reach `Instant.now`
 - M4, T3 — `handle`: if/else-if on a `String` kind, beside a sealed class that
   already models the same domain
