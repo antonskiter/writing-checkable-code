@@ -14,7 +14,7 @@ and generated source — never the diff alone.
 
 ### S1 · System
 
-**Contract.** Every fact — value, rule, decision — has one home (Hunt & Thomas, DRY).
+**Contract.** Every fact — a value, a decision — has one home (Hunt & Thomas, DRY). A rule is S2's.
 
 **Check.** Change the one home: anything still behaving by the old value, or still stating it, has a second. Search what the build ships but never runs — schema, manifest, another language's source. A test restating the value is the check, not a second home, provided it runs, fails when the one home changes, and does not supply the value to the code under test. A second home decides the row wherever it was found; one home is a claim over the whole tree, and without that search the fact is unverified, not single-homed.
 
@@ -88,7 +88,7 @@ and generated source — never the diff alone.
 
 **Contract.** Each body stays inside a complexity budget.
 
-**Check.** Checker in CI: over McCabe's 10 fails. A flat dispatch on one value is exempt, flat meaning each arm is a single call or return. With no checker in the build, that absence is the finding, not each body.
+**Check.** Checker in CI: over McCabe's 10 fails. A flat dispatch on one value is exempt, flat meaning each arm is a single call or return. With no checker in the build, the absent checker fires against the build — one finding, not one per body, and not unverified.
 
 ### F3 · Function
 

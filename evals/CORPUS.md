@@ -58,7 +58,11 @@ testing and are recorded in `references/rejected.md`.
 
 Fires:
 - S1 — `RETRY_TIMEOUT` vs the literal 30s deadline in `fetch_with_retry` and the
-  `PERSIST_TIMEOUT` default; the id-required rule in both `validate_record` and `_persist`
+  `PERSIST_TIMEOUT` default. Not the id-required rule: a rule is S2's
+- S2 — the id-required rule in both `validate_record` and `_persist`: executed,
+  requiring a non-empty id at `validate_record` alone gives two answers for
+  `{"id": "", "amount": 1}` — `process` returns None, `_persist` returns
+  `{'id': '', 'amount': 1, 'timeout': 30}`
 - M2 — `PERSIST_TIMEOUT` read inside `_persist`, below the entry point
 - M3 — `fetch_with_retry` reaches `requests` and the clock; `stamp` reaches the clock
 - M4, T3 — `handle_event`: elif chain on `event["type"]`, no declared extension point
