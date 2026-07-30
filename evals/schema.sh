@@ -3,44 +3,33 @@
 # its check was a visibly empty cell; in the block layout it is invisible, so it
 # is checked here instead.
 #
-# Fails when a "### <ID> · <Group>" block does not carry exactly one
-# "**Contract.**" and one "**Check.**", when an ID is duplicated, or when an ID
-# cited by references/calibration.md has no block.
+# Every "### <id> · <group>" block carries a Contract line and a Check line, and
+# each of those carries text. A label with nothing after it is the case this
+# exists to catch.
 cd "$(dirname "$0")/.." || exit 1
 
-skill=SKILL.md
 status=0
+fail() { printf '%s\n' "$@"; status=1; }
 
-report() { printf '%s\n' "$1"; status=1; }
+empty=$(grep -nE '^\*\*(Contract|Check)\.\*\* *$' SKILL.md)
+[ -n "$empty" ] && fail "field label with no text:" "$empty"
 
-# One line per block: <id> <contract-count> <check-count>
-blocks=$(awk '
-  /^### / { id = $2; seen[++n] = id; next }
-  /^## /  { id = "" }
-  id != "" && /^\*\*Contract\.\*\*/ { c[id]++ }
-  id != "" && /^\*\*Check\.\*\*/    { k[id]++ }
-  END { for (i = 1; i <= n; i++) print seen[i], c[seen[i]] + 0, k[seen[i]] + 0 }
-' "$skill")
+# The trailing sentinel closes the last block, so one rule set covers them all.
+missing=$({ cat SKILL.md; printf '### . .\n'; } | awk '
+  /^### / { if (id != "" && (c == 0 || k == 0)) print id; id = $2; c = 0; k = 0; next }
+  /^\*\*Contract\.\*\* *[^[:space:]]/ { c++ }
+  /^\*\*Check\.\*\* *[^[:space:]]/    { k++ }
+')
+[ -n "$missing" ] && fail "missing Contract or Check: $(printf '%s' "$missing" | tr '\n' ' ')"
 
-[ -z "$blocks" ] && { report "no rule blocks found in $skill"; exit 1; }
+dupes=$(grep -oE '^### [A-Z][0-9]' SKILL.md | sort | uniq -d | grep -oE '[A-Z][0-9]')
+[ -n "$dupes" ] && fail "duplicate id: $(printf '%s' "$dupes" | tr '\n' ' ')"
 
-while read -r id contracts checks; do
-  [ "$contracts" = 1 ] || report "$id: $contracts Contract field(s), expected 1"
-  [ "$checks" = 1 ] || report "$id: $checks Check field(s), expected 1"
-done <<<"$blocks"
-
-dupes=$(printf '%s\n' "$blocks" | awk '{ print $1 }' | sort | uniq -d)
-[ -n "$dupes" ] && report "duplicate rule id(s): $(printf '%s' "$dupes" | tr '\n' ' ')"
-
-# Every ID cited by calibration.md must exist in SKILL.md, as a block for the
-# contract rows and as a bullet for the mechanical ones.
-have=$({ printf '%s\n' "$blocks" | awk '{ print $1 }'
-         grep -oE '^- \*\*L[0-9]\*\*' "$skill" | grep -oE 'L[0-9]'; } | sort -u)
-for id in $(grep -oE '^- \[[A-Z][0-9]' references/calibration.md | grep -oE '[A-Z][0-9]' | sort -u); do
-  printf '%s\n' "$have" | grep -qx "$id" || report "calibration.md cites $id, absent from $skill"
+# Every id calibration.md cites exists in SKILL.md, as a block for the contract
+# rows and as a bullet for the mechanical ones.
+for id in $(grep -oE '^- \[[A-Z][0-9]' references/calibration.md | grep -oE '[A-Z][0-9]'); do
+  grep -qE "^(### $id |- \*\*$id\*\*)" SKILL.md || fail "calibration.md cites $id, absent from SKILL.md"
 done
 
-n=$(printf '%s\n' "$blocks" | grep -c '')
-[ $status -eq 0 ] && printf '%s rule block(s), each with one Contract and one Check\n' "$n"
-
+[ $status -eq 0 ] && printf '%s rule block(s), each with a Contract and a Check\n' "$(grep -c '^### ' SKILL.md)"
 exit $status
