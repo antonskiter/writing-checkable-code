@@ -8,22 +8,38 @@
 #
 # Naming: <RULE>-<fixture>-<symbol>-<fires|silent>.sh. A witness that needs a
 # toolchain it cannot find exits 77 and is reported SKIP, which fails the run.
+#
+# Witnesses are independent, so they run concurrently: serially the kotlin ones
+# alone take over two minutes of compilation. Each writes its own report file so
+# a failure stays attached to the witness that produced it. Pass a substring to
+# run a subset, e.g. ./witness.sh python.
 cd "$(dirname "$0")" || exit 1
 export GO111MODULE=off
 
-pass=0 fail=0 skip=0
-only=${1:-}
+reports=$(mktemp -d); trap 'rm -rf "$reports"' EXIT
+export reports
 
-for w in witnesses/*.sh; do
+one() {
+  local w=$1 name out rc
   name=$(basename "$w" .sh)
-  case $name in *"$only"*) ;; *) continue ;; esac
   out=$("$w" 2>&1); rc=$?
-  case $rc in
-    0)  printf 'PASS %s\n' "$name"; pass=$((pass + 1)) ;;
-    77) printf 'SKIP %s — %s\n' "$name" "$out"; skip=$((skip + 1)) ;;
-    *)  printf 'FAIL %s\n' "$name"; printf '%s\n' "$out" | sed 's/^/       /'; fail=$((fail + 1)) ;;
-  esac
-done
+  {
+    case $rc in
+      0)  printf 'PASS %s\n' "$name" ;;
+      77) printf 'SKIP %s — %s\n' "$name" "$out" ;;
+      *)  printf 'FAIL %s\n' "$name"; printf '%s\n' "$out" | sed 's/^/       /' ;;
+    esac
+  } >"$reports/$name"
+}
+export -f one
 
-printf '\n%s passed, %s failed, %s skipped\n' "$pass" "$fail" "$skip"
-[ "$fail" -eq 0 ] && [ "$skip" -eq 0 ] && [ "$pass" -gt 0 ]
+find witnesses -name "*${1:-}*.sh" -print0 |
+  xargs -0 -P "$(nproc)" -I{} bash -c 'one "$@"' _ {}
+
+for r in "$reports"/*; do cat "$r"; done
+printf '\n%s passed, %s failed, %s skipped\n' \
+  "$(grep -lc '^PASS ' "$reports"/* 2>/dev/null | wc -l)" \
+  "$(grep -lc '^FAIL ' "$reports"/* 2>/dev/null | wc -l)" \
+  "$(grep -lc '^SKIP ' "$reports"/* 2>/dev/null | wc -l)"
+
+! grep -q '^FAIL \|^SKIP ' "$reports"/* && [ -n "$(ls -A "$reports")" ]
