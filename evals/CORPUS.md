@@ -16,6 +16,13 @@ unrelated programs that share a parent, so a fact recurring across two of them
 is not a second home: the 30-second deadline is eight separate S1 findings, one
 per tree, not one fact in twelve homes.
 
+An entry that names a witness — `(witness: X4-bash-stamp-fires)` — is decided by
+`./witness.sh`, which runs that script and fails when the verdict stops holding.
+An entry naming no witness was decided by hand and can go stale silently. The
+value a verdict turns on lives in the witness, which asserts it against the
+fixture; this file records which rule, which symbol and which verdict, and does
+not restate the value.
+
 Every fixture parses or compiles clean under its own toolchain — the bait is
 valid code, not broken code. Toolchains used: python3, go, tsc --strict,
 lua5.4, node, bash -n, swiftc -typecheck, javac 21, kotlinc 2.1.
@@ -59,24 +66,27 @@ testing and are recorded in `references/rejected.md`.
 Fires:
 - S1 — `RETRY_TIMEOUT` vs the literal 30s deadline in `fetch_with_retry` and the
   `PERSIST_TIMEOUT` default. Not the id-required rule: a rule is S2's
-- S2 — the id-required rule in both `validate_record` and `_persist`: executed,
-  requiring a non-empty id at `validate_record` alone gives two answers for
-  `{"id": "", "amount": 1}` — `process` returns None, `_persist` returns
-  `{'id': '', 'amount': 1, 'timeout': 30}`
+- S2 — the id-required rule in both `validate_record` and `_persist`: requiring a
+  non-empty id at `validate_record` alone gives one record two answers, because
+  `_persist` still stores what `process` refuses
+  (witness: S2-python-ingest-validate_record-fires)
 - M2 — `PERSIST_TIMEOUT` read inside `_persist`, below the entry point
 - M3 — `fetch_with_retry` reaches `requests` and the clock; `stamp` reaches the clock
 - M4, T3 — `handle_event`: elif chain on `event["type"]`, no declared extension point
 - F2 — silent per body: the elif chain is a flat dispatch on one value. No
   complexity checker is installed, so the absence itself is the finding
-- T1 — `validate_record` names non-numeric amounts, yet `_persist({"id":"x","amount":"oops"})`
-  returns `{'id': 'x', 'amount': 'oops', 'timeout': 30}`. (The `"quux"` event is not a T1
-  witness: the else branch handles it, so no site names it. It fires L2 and T3/M4.)
+- T1 — `validate_record` names non-numeric amounts, yet `_persist` takes one,
+  reaches the work and returns the record
+  (witness: T1-python-ingest-_persist-fires). (The `"quux"` event is not T1 bait —
+  the else branch handles it, so no site names it. It fires L2 and T3/M4.)
 - T2 — `validate_record` returns bool; `_persist` accepts the same raw dict
 - N1 — `process`, `stamp`
-- X1 — `process` returns None for a bad record; "bad record" omits the value;
-  unknown kind produces `{"status": "ok"}`
+- X1 — `process` completes normally for a bad record and the message it logs omits
+  the offending value (witness: X1-python-ingest-process-fires); unknown kind
+  produces `{"status": "ok"}`
 - X4 — `stamp` embeds the clock
-- L1 — `except Exception: pass` in `process`
+- L1 — `except Exception: pass` in `process` discards the error and the caller
+  receives None (witness: L1-python-ingest-process-fires)
 - L2 — `handle_event` else-branch routes to `_on_created`
 
 Silent:
@@ -93,9 +103,10 @@ Fires:
   stubbing to `None` fails two — which is why X2 checks mutants
 - X1, L2 — `render_row` silently left-aligns any `align` other than `"right"`
 
-- F4 — executed: `classify` tests `start > now` before `start in holidays`, so a
-  future holiday never classifies as a holiday; permuting the two branches turns
-  `Interval(500,600), now=100, holidays={500}` from "future" into "holiday"
+- F4 — `classify` tests `start > now` before `start in holidays`, so a future
+  holiday never classifies as a holiday; permuting the two branches changes the
+  answer for an interval that satisfies both
+  (witness: F4-python-report-classify-fires)
 
 Silent:
 - T3, M4 — `classify`: unrelated predicates, no kind, no cases
@@ -107,10 +118,16 @@ Fires:
 - S1 — `RequestTimeout` has no reader; 30s recurs as literals in `Fetch` and `Handle`
 - M3 — `Fetch` builds its own `http.Client`; `Handle` reads the clock
 - T1, T2 — `Record{Amount: -5}` constructs and is stored; `validate`'s verdict is discarded
-- X1 — `Put` says "invalid record" without the value; `Fetch` returns `(nil, nil)`
-- X4 — `Summarise` returns map keys in iteration order
-- L1 — `_ = validate(r)`; error converted to `(nil, nil)` in `Fetch`
+- X1 — `Put` says "invalid record" without the value; `Fetch` answers an
+  unreachable address with no response and no error
+  (witness: X1-go-Put_Fetch-fires)
+- X4 — `Summarise` returns map keys in iteration order, which Go randomises per
+  process (witness: X4-go-Summarise-fires)
+- L1 — `_ = validate(r)` in `Handle` discards a verdict that is really there, so a
+  rejected record is stored and reported as a success
+  (witness: L1-go-Handle-fires); `Fetch` converts its error away
 - L2 — `Describe` default returns `"text"`, aliasing a real case
+  (witness: L2-go-Describe-fires)
 - L5 — `//nolint:errcheck` with no owner or expiry
 - L6 — `region` reassigned in `init` and `SetRegion`; `cache` mutated by `Put`
 
@@ -147,10 +164,13 @@ Fires:
 - N1 — `stamp` mutates its argument. (`ids` returning hash order is X4's subject,
   not a write the name omits)
 - X1 — `process` returns nil for bad input; "bad record" omits the value
-- X4 — `ids` differs across fresh processes (executed: `theta,eta,zeta,…` then
-  `alpha,theta,beta,…`); `stamp` embeds the clock
+  (witness: X1-lua-process-fires)
+- X4 — `ids` returns table hash order, which Lua reseeds per process, so fresh
+  runs disagree (witness: X4-lua-ids-fires); `stamp` embeds the clock
 - L1 — `pcall` result discarded in `process`, error never read
+  (witness: L1-lua-process-fires)
 - L2 — `handle` else-branch routes an unknown kind to `on_created`
+  (witness: L2-lua-handle-fires)
 - L6 — `RETRY_LIMIT` global; `cache` and `region` reassigned by `set_region`
 
 Silent:
@@ -166,10 +186,12 @@ Fires:
   promise the name makes, which this check does not reach)
 - X1 — executed: `fetch_manifest` against an unreachable host exits 0, the
   failure swallowed by `return 0`; "bad manifest" omits the value
-- X4 — executed: `stamp x` twice gives `x@1785346174` / `x@1785346175`
+- X4 — `stamp` embeds the clock, so two runs of the same argument differ
+  (witness: X4-bash-stamp-fires)
 - L1 — `curl` failure converted to `return 0`; `$?` read after a pipeline whose
   exit status was already consumed
-- L2 — executed: `handle_target quux` routes to `deploy_staging`
+- L2 — an unrecognised target routes to `deploy_staging` rather than being refused
+  (witness: L2-bash-handle_target-fires)
 - L6 — `REGION` reassigned by `set_region`
 
 Silent:
@@ -186,13 +208,15 @@ Fires:
 - T2 — `isOrder` returns a boolean; `persist` takes the same raw object
 - N1 — `retry` performs one fetch per loop with no backoff; `persist` mutates a
   module-level `Map` and returns a rounded copy
-- X1 — executed: `ingest("{{{")` and `ingest("{}")` both return null;
-  `load("{\"a\":1}")` returns the object itself despite an array contract
-- X4 — `stamp` embeds the clock. `totals` reorders integer-like keys first
-  (executed: ids `b,10,a,2` come back as `2,10,b,a`) but does so deterministically,
-  so X4 is silent on it and N1 carries it
+- X1 — malformed and structurally wrong input both come back from `ingest` as null
+  with a "bad order" warning that omits the value; `load` returns a non-array
+  despite an array contract (witness: X1-js-ingest_load-fires)
+- X4 — `stamp` embeds the clock. `totals` reorders integer-like keys first but does
+  so identically in every fresh process, so X4 is silent on it and N1 carries it
+  (witness: X4-js-totals-silent)
 - L1 — `catch {}` in `ingest`; `catch (e) {}` in `load`
-- L2 — executed: `handle({kind:"deleted"})` returns `"ok"` from the default arm
+- L2 — an unrecognised kind reaches the `default` arm and is given a real case's
+  answer (witness: L2-js-handle-fires)
 - L6 — `currentRegion` reassigned by `setRegion`; `cache` mutated by `persist`
 
 Silent:
@@ -207,8 +231,9 @@ Fires:
   constructs and reaches `store.put`; `Amount` is on no path
 - T2 — `Amount` is unobtainable without its failable init, but no signature
   downstream takes it
-- T4 — executed: `CappedStore` fails the `Store` put-then-get contract
-  (`Store: true`, `CappedStore: false`)
+- T4 — `CappedStore` fails the `Store` put-then-get contract that `Store` passes,
+  the suite parameterized over the constructor
+  (witness: T4-swift-CappedStore-fires)
 - N1 — `fetch` hides a 30-second busy-wait; `apply` always returns `"ok"`
 - X1 — `store`'s `catch` returns `"ok"` on failure; `"bad input"` omits the
   value; `total(for:)` force-unwraps
@@ -219,27 +244,30 @@ Fires:
 - L6 — `static var region`
 
 Silent:
-- T3 — `apply`'s `switch` over `Entry` is an exhaustive match over a closed sum
+- T3 — `apply`'s `switch` over `Entry` is an exhaustive match over a closed sum:
+  adding a member breaks the build (witness: T3-swift-apply-silent)
 
 ## java/Ledger.java
 
 Fires:
-- L3 — `RETRY_LIMIT` has no reader: executed, deleting it and rebuilding with
-  `javac -Xlint:all` is clean and every other verdict is unchanged. Not S1 —
+- L3 — `RETRY_LIMIT` has no reader: deleting it rebuilds clean under
+  `javac -Xlint:all` (witness: L3-java-RETRY_LIMIT-fires). Not S1 —
   within this tree nothing else states 3, so changing the one home changes
   nothing and the fact has no second home
 - M4, T3 — `handle`: if/else-if on `entry.kind`
 - T1, T2 — `Entry` is a mutable bag of public fields; `validate` returns a
   boolean and `persist` takes the same raw `Entry`
-- T4 — executed: `CappedStore` fails the `Store` put-then-get contract
-  (`Store: true`, `CappedStore: false`)
+- T4 — `CappedStore` fails the `Store` put-then-get contract that `Store` passes,
+  the suite parameterized over the constructor
+  (witness: T4-java-CappedStore-fires)
 - N1 — `renderRow` pads by grapheme count, not display width. (`total` throwing is
   neither a write nor a wait)
-- X1 — executed: `process` with a null id prints "bad record" and returns null;
-  `Store.total("missing")` raises `NullPointerException` naming a Map internal,
-  not the id; `renderRow(align="up")` silently left-aligns
-- X4 — `stamp` embeds the clock. (`ids()` does not fire: executed, `HashMap` order
-  was identical across 7 runs)
+- X1 — `process` with a null id completes normally, printing "bad record"; a total
+  for an absent id raises `NullPointerException` naming a Map internal, not the id
+  (witness: X1-java-process-fires); an unknown `align` is silently left-aligned
+  rather than refused (witness: X1-java-renderRow-fires)
+- X4 — `stamp` embeds the clock. (`ids()` does not fire: its `HashMap` key order is
+  stable across fresh JVMs) (witness: X4-java-ids-silent)
 - L1 — `catch (Exception e) {}` in `process`
 - L2 — `handle` else-branch routes an unknown kind to `onCreated`
 - L6 — `static String region` reassigned by `setRegion`
@@ -251,18 +279,23 @@ Silent:
 
 Fires:
 - S1 — 30_000 is a literal in `fetchDeadline`
-- L3 — `RETRY_LIMIT` has no reader: executed, deleting it and rebuilding with
-  `kotlinc` exits 0. Not S1 — nothing else in this tree states 3
+- L3 — `RETRY_LIMIT` has no reader: deleting it rebuilds clean under `kotlinc`
+  (witness: L3-kotlin-RETRY_LIMIT-fires). Not S1 — nothing else in this tree
+  states 3
 - M3 — `stamp` and `fetchDeadline` reach `Instant.now`
 - M4, T3 — `handle`: if/else-if on a `String` kind, beside a sealed class that
   already models the same domain
-- T4 — executed: `CappedStore` fails the `Store` put-then-get contract
-  (`Store: true`, `CappedStore: false`)
+- T4 — `CappedStore` fails the `Store` put-then-get contract that `Store` passes,
+  the suite parameterized over the constructor
+  (witness: T4-kotlin-CappedStore-fires)
 - N1 — `process` names no operation
-- X1 — executed: `process(null, 5.0)` prints "bad record" and returns null;
-  `renderRow(align="up")` silently left-aligns; `require` message omits the id
+- X1 — `process` with a null id completes normally, printing "bad record", and
+  `persist`'s `require` message omits the id (witness: X1-kotlin-process-fires); an
+  unknown `align` is silently left-aligned rather than refused
+  (witness: X1-kotlin-renderRow-fires)
 - X4 — `stamp` embeds the clock. (`ids()` does not fire: `mutableMapOf` is a
-  `LinkedHashMap`, identical across 7 runs)
+  `LinkedHashMap`, so key order is stable across fresh JVMs)
+  (witness: X4-kotlin-ids-silent)
 - L1 — `catch (e: Exception) { null }` in `process`
 - L2 — `handle` else-branch routes an unknown kind to `onCreated`
 - L6 — top-level `var region`
@@ -277,15 +310,21 @@ Bait for the four rules the corpus did not reach. Fires:
 - L4 — three comments whose subject is not the current code: a former version
   ("used to round each line"), a rejected alternative ("we considered ... but
   rejected it"), and a schedule ("TODO: ... next quarter")
-- F1 — executed: `invoice_total` reaches `line_total` directly and through
-  `subtotal`, a level it had already delegated
-- F3 — executed: `Cart.total` is derived and stored; `add(40)` moves the source
-  to 100 while `read()` still returns 60, with no assertion and no bound
-- X3 — executed: `Cart`'s comment says "whole cents" and it is built from
-  floats (`[1.5, 2.25]` -> 3.75); `apply_discount`'s comment does not say `pct`
-  is a fraction, so `apply_discount(100, 20)` returns -1900
+- F1 — `invoice_total` reaches `line_total` directly and through `subtotal`, a
+  level it had already delegated
+  (witness: F1-python-billing-invoice_total-fires)
+- F3 — `Cart.total` is derived and stored; adding to the cart moves the source
+  while `read()` still answers from the stored copy, with no assertion and no
+  bound (witness: F3-python-billing-Cart-fires)
+- X3 — `Cart`'s comment says "whole cents", yet a call written from that comment
+  alone is accepted with fractional amounts
+  (witness: X3-python-billing-Cart-fires); `apply_discount`'s comment does not say
+  `pct` is a fraction, so a call written from it alone inverts the sign
+  (witness: X3-python-billing-apply_discount-fires)
 - T1 — negative and non-numeric amounts construct and reach the arithmetic
 
 Silent:
 - F4 — `invoice_total`'s two branches cannot both match
-- S1 — `TAX_RATE` has one home
+- S1 — `TAX_RATE` has one home: nothing else in the tree states the rate, and
+  changing that home changes every dependent behaviour
+  (witness: S1-python-billing-TAX_RATE-silent)
