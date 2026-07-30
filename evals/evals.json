@@ -1,0 +1,45 @@
+{
+  "skill_name": "writing-checkable-code",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you review shipping.py for me?",
+      "expected_output": "A review naming the duplicated free-shipping threshold, the discarded exception, and the carrier chain that answers an unknown carrier with a real case — each at a named symbol, with the check that decides it.",
+      "files": ["evals/files/shipping.py"],
+      "expectations": [
+        "Reports the 5000 literal in qualifies_for_free_shipping as a second home for FREE_SHIPPING_THRESHOLD",
+        "Reports that except Exception in ship discards the error so no caller learns the shipment failed",
+        "Reports that create_label's else branch answers an unknown carrier with _ups_label rather than refusing it",
+        "Reports the carrier chain as a dispatch on one value's kind with no extension point",
+        "Does not propose folding _ups_label, _fedex_label and _dhl_label together, which no single input reaches",
+        "States for at least one finding how it was decided — a change made, a value fed, or a run compared — rather than asserting it"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Clean up render.py — it feels messy to me.",
+      "expected_output": "No finding against render_cell's seven parameters and no proposal to merge the three identical handlers. Both are shapes the rules must stay silent on.",
+      "files": ["evals/files/render.py"],
+      "expectations": [
+        "Does not report render_cell's parameter count as a defect",
+        "Does not report render_cell as having too wide an interface, since every one of the seven values is the caller's to choose",
+        "Does not propose merging on_invoice_sent, on_invoice_paid and on_invoice_void into one function or a table",
+        "If it reports anything about the three handlers, it says they are free to diverge rather than duplicated",
+        "Any finding it does report names the symbol and the check that decides it"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The tests all pass on discount.py — is the discount logic correct?",
+      "expected_output": "A refusal to treat the passing suite as evidence, shown by mutating the code and observing the suite still pass.",
+      "files": ["evals/files/discount.py", "evals/files/test_discount.py"],
+      "expectations": [
+        "Does not answer that the passing suite shows the logic is correct",
+        "Identifies that the assertions check only the type of the return value, so they cannot fail on a wrong amount",
+        "Actually runs something — changes a literal, a comparison or a branch and reruns the suite, or deletes a body and reruns — rather than only reasoning about the tests",
+        "Reports at least one surviving mutant, naming what was changed and that the suite still passed",
+        "Does not claim the code is incorrect without evidence either"
+      ]
+    }
+  ]
+}
