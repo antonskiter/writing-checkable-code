@@ -1,6 +1,6 @@
 # Expected linter findings over the fixtures: one "<linter> <code>"
 # line per finding, sorted. Every entry is intentional bait, recorded
-# in CORPUS.md under the rule it baits. Regenerate with
+# in VERDICTS.md under the rule it baits. Regenerate with
 # ./lint.sh --update-baseline after changing a fixture on purpose.
 eslint no-empty
 eslint no-unused-vars

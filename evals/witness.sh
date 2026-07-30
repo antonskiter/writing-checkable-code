@@ -2,9 +2,9 @@
 # Runs the witnesses in witnesses/. One witness per recorded verdict: it exits 0
 # when the verdict reproduces and non-zero when it does not.
 #
-# CORPUS.md records what a check returned when it was last run by hand. A stored
-# observation with nothing asserting it against the fixture goes stale silently,
-# so the observations that can be re-executed live here as scripts instead.
+# VERDICTS.md names the witness that decides each verdict it can. The value a
+# verdict turns on lives here, in the script that asserts it against the fixture,
+# so it cannot go stale unnoticed the way a recorded observation could.
 #
 # Naming: <RULE>-<fixture>-<symbol>-<fires|silent>.sh. A witness that needs a
 # toolchain it cannot find exits 77 and is reported SKIP, which fails the run.

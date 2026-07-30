@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs each language's standard linter over the fixtures.
 # The invariant: every finding printed here is intentional bait, recorded in
-# CORPUS.md under the rule it baits. A finding that is not in CORPUS.md is a
+# VERDICTS.md under the rule it baits. A finding that is not in VERDICTS.md is a
 # defect in the fixture, not in the code under review.
 #
 # The exit status decides that invariant mechanically: each finding is reduced
@@ -72,7 +72,7 @@ if [ "$1" = --update-baseline ]; then
   {
     printf '# Expected linter findings over the fixtures: one "<linter> <code>"\n'
     printf '# line per finding, sorted. Every entry is intentional bait, recorded\n'
-    printf '# in CORPUS.md under the rule it baits. Regenerate with\n'
+    printf '# in VERDICTS.md under the rule it baits. Regenerate with\n'
     printf '# ./lint.sh --update-baseline after changing a fixture on purpose.\n'
     cat "$emitted"
   } >"$baseline"

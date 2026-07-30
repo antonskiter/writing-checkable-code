@@ -44,7 +44,9 @@ acyclic graph passes, including an upside-down one.
 A formatting function taking seven parameters — label, value, unit, precision,
 alignment, width, fill. Wide, but every one of the seven is a value the caller
 chooses and can supply without knowing anything about the module. **Silent.** No
-row counts parameters; two attempts at one failed testing (see `rejected.md`).
+row counts parameters: two rules that did were tried, failed testing and were
+removed, one measuring literal frequency across call sites and one asking whether
+a caller would pass a different value.
 
 ## T3, M4
 

@@ -35,8 +35,15 @@ A correct build contains exactly these four files:
 writing-checkable-code/SKILL.md
 writing-checkable-code/README.md
 writing-checkable-code/references/calibration.md
-writing-checkable-code/.gitignore
 ```
+
+`.gitignore` and `.gitattributes` carry `export-ignore` themselves, so neither
+reaches the archive: they govern the repository and mean nothing to a reader who
+installed the skill.
+
+Nothing the shipped set names may live under `evals/`. The packager strips that
+directory, so a pointer from `SKILL.md` or `references/` into it resolves in a
+clone and dangles in the distributable.
 
 The export step is what keeps that invariant. `package_skill.py` excludes
 `__pycache__` and `node_modules` and, at the skill root only, `evals/`. It does

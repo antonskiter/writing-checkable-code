@@ -19,7 +19,10 @@ must stay silent, which is where false positives come from.
 
 `evals/` is development apparatus and is excluded from packaged builds and
 release archives. It holds bait code in Python, Go, TypeScript, JavaScript, Lua,
-Bash, Swift, Java and Kotlin with known verdicts per rule (`CORPUS.md`), the
-linter harness (`lint.sh`), the rule-block shape gate (`schema.sh`), and
-`rejected.md` — rules tried and removed, with the evidence. An edit to a check is
-validated by re-running it there.
+Bash, Swift, Java and Kotlin, and records in `VERDICTS.md` which rule fires on
+which symbol in each. A verdict that can be re-executed names a witness under
+`witnesses/`, a script that exits non-zero once the verdict stops holding;
+`witness.sh` runs them. `lint.sh` holds each language's linter to a checked-in
+baseline, `schema.sh` checks the shape of the rule blocks, and `rejected.md`
+records rules tried and removed, with the evidence. An edit to a check is
+validated by re-running these, not by rereading them.
