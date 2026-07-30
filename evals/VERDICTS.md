@@ -16,6 +16,16 @@ unrelated programs that share a parent, so a fact recurring across two of them
 is not a second home: the 30-second deadline is eight separate S1 findings, one
 per tree, not one fact in twelve homes.
 
+Two verdicts are the repository's rather than any section's, and are recorded here
+once because they hold for every fixture alike: **F2** — no complexity checker is
+configured anywhere in this repository, so nothing measures a body and the absent
+checker is one finding about the build (witness: F2-tree-bodies-silent; installed
+for the run, a McCabe gate at 10 fails no body in `python/`, `go/` or `files/`) —
+and **S3** — no layer map is declared anywhere in it, so placement is unverified
+over all 11 units of those three trees, every one of which takes a number with no
+cycle (witness: S3-tree-placement-silent). Neither is restated per section: a
+finding a reviewed file cannot decide is reported once, under the repository.
+
 An entry that names a witness — `(witness: X4-bash-stamp-fires)` — is decided by
 `./witness.sh`, which runs that script and fails when the verdict stops holding.
 An entry naming no witness was decided by hand and can go stale silently. The
@@ -73,8 +83,6 @@ Fires:
 - M2 — `PERSIST_TIMEOUT` read inside `_persist`, below the entry point
 - M3 — `fetch_with_retry` reaches `requests` and the clock; `stamp` reaches the clock
 - M4, T3 — `handle_event`: elif chain on `event["type"]`, no declared extension point
-- F2 — silent per body: the elif chain is a flat dispatch on one value. No
-  complexity checker is installed, so the absence itself is the finding
 - T1 — `validate_record` names non-numeric amounts, yet `_persist` takes one,
   reaches the work and returns the record
   (witness: T1-python-ingest-_persist-fires). (The `"quux"` event is not T1 bait —
@@ -91,6 +99,9 @@ Fires:
 
 Silent:
 - S2 — `_on_created`/`_on_updated`/`_on_deleted`: identical bodies free to diverge
+- F2 — silent per body: `handle_event`'s elif chain is a flat dispatch on one
+  value, and with a gate installed at 10 no body in this tree is over budget. The
+  absent checker is the repository's finding above, not this file's
 - L6 — `RETRY_TIMEOUT` and `log` are never reassigned or mutated
 
 ## python/report.py + test_report.py
@@ -110,7 +121,12 @@ Fires:
 
 Silent:
 - T3, M4 — `classify`: unrelated predicates, no kind, no cases
-- S3 — no cycle; both units take numbers. Placement is unverified: no layer map exists
+- S3 — no cycle; `report.py` takes 1 and `test_report.py` 2, so nothing here is
+  above a layer. Placement unverified is the repository's verdict above, stated
+  once, not this file's finding (witness: S3-tree-placement-silent)
+- F2 — no body in this tree is over budget under a gate installed at 10; the
+  absent checker is the repository's finding above
+  (witness: F2-tree-bodies-silent)
 
 ## go/store.go + handler.go
 
@@ -132,7 +148,12 @@ Fires:
 - L6 — `region` reassigned in `init` and `SetRegion`; `cache` mutated by `Put`
 
 Silent:
-- S3 — store.go level 1, handler.go level 2, no cycle. Placement unverified: no layer map
+- S3 — store.go level 1, handler.go level 2, no cycle, so no unit here is above a
+  layer. Placement unverified is the repository's verdict above, stated once, not
+  this package's finding (witness: S3-tree-placement-silent)
+- F2 — `Describe` is the worst body in this package at McCabe 5 under a gate
+  installed at 10; the absent checker is the repository's finding above
+  (witness: F2-tree-bodies-silent)
 
 ## ts/orders.ts + report.ts
 

@@ -150,6 +150,14 @@ Report each group at the row whose check the change answers, naming its sites.
 Order what remains by consequence: a wrong answer, then a state that produces
 one, then a missing seam, then missing evidence.
 
+A finding the reviewed file cannot decide — F2's absent complexity checker, S3's
+undeclared layer map — is the repository's and not the file's: the same one holds
+for every file in the tree. Report it once, under the repository, after the file's
+findings and not among them, naming the absent artifact. Restated per file, per
+body or per unit it is still one finding, and the number of files it is restated
+in says nothing about any of them. Its absence from a file's findings is not a
+pass for that file.
+
 ## Mechanical
 
 Fail the build on:

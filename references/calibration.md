@@ -13,6 +13,7 @@ the rest of the file is not needed.
 - [M1 — a wide signature that leaks nothing](#m1)
 - [T3, M4 — one value compared against different others](#t3-m4)
 - [T3 — an exhaustive match over a closed sum](#t3)
+- [F2 — a body in a build with no complexity checker](#f2)
 - [F4 — branches that cannot both match](#f4)
 - [N2 — distinct names for distinct contracts](#n2)
 - [L6 — a binding nothing writes after start-up](#l6)
@@ -38,6 +39,16 @@ Two or more units, dependencies acyclic, every unit taking a number, and no
 layer map anywhere in the repository. **Not a pass and not a fire:** the row
 reports *placement unverified*, because levelization detects cycles only and any
 acyclic graph passes, including an upside-down one.
+
+That verdict is the repository's, not a file's: with no map declared anywhere, the
+same *placement unverified* holds for every file in the tree, so it is reported
+once under the repository rather than restated in each file's findings. Executed
+over the three trees the rows were calibrated against: 11 units, every one
+numbered, no cycle, and no declared map in any form a tree can carry one — an
+import contract, a layered architecture rule, a path restriction, a checked-in
+layer list. **Silent per file**, and silence about a file is not a pass for it.
+The cycle half still fires per file: a unit in a cycle takes no number, and that
+finding is the file's.
 
 ## M1
 
@@ -68,6 +79,19 @@ the compiler's exhaustiveness guarantee, so the refactor makes the code worse.
 The exemption is narrow: *exhaustive means adding a member breaks the build*. A
 `default` or `else` arm forfeits exactly that, so a switch carrying one is not
 exhaustive and T3 fires.
+
+## F2
+
+Any body at all, in a repository whose build configures no complexity checker —
+no `max-complexity`, no `C901`, no `gocyclo`, no gate in CI. **Silent per body**,
+and per file: nothing measured this body, and the clause is *one finding, not one
+per body*. What remains is a verdict about the build, reported once under the
+repository and not among a file's findings, as the reporting rule after X5
+directs. Executed over the three trees the rows were calibrated against: a McCabe
+gate installed at 10 for the run fails no body in any of them — 0 findings, where
+the same gate at 1 reports 12 — so the absent checker separated no body and no
+file from any other, which is what makes it the build's finding and not theirs.
+Silence about a body is not a pass for it.
 
 ## F4
 
