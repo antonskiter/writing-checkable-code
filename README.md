@@ -20,5 +20,6 @@ must stay silent, which is where false positives come from.
 `evals/` is development apparatus and is excluded from packaged builds and
 release archives. It holds bait code in Python, Go, TypeScript, JavaScript, Lua,
 Bash, Swift, Java and Kotlin with known verdicts per rule (`CORPUS.md`), the
-linter harness (`lint.sh`), and `rejected.md` — rules tried and removed, with
-the evidence. An edit to a check is validated by re-running it there.
+linter harness (`lint.sh`), the rule-block shape gate (`schema.sh`), and
+`rejected.md` — rules tried and removed, with the evidence. An edit to a check is
+validated by re-running it there.
