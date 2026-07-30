@@ -138,6 +138,11 @@ Fires:
   (witness: F4-python-report-classify-fires)
 
 Silent:
+- M1 — `render_row`: seven parameters, every one the caller's own value, and the
+  call answers with nothing else of the module having run
+  (witness: M1-python-render_row-silent). The witness asserts the same of
+  `files/render.py` `render_cell`, which carries an interface docstring — the row's
+  verdict is the same with it and without it
 - T3, M4 — `classify`: unrelated predicates, no kind, no cases
 - S3 — no cycle; `report.py` takes 1 and `test_report.py` 2, so nothing here is
   above a layer. Placement unverified is the repository's verdict above, stated
@@ -217,7 +222,11 @@ Fires:
 - L6 — `currentRegion` reassigned by `setRegion`
 
 Silent:
-- M1 — `renderRow`: every listed item is caller-chosen
+- M1 — `renderRow`: every parameter is caller-chosen, and the one argument another
+  unit produces is typed — `ingest` returns `Order`, which is what `renderRow`
+  takes, so the composition is writable from the signatures alone. Executed under
+  `tsc --strict` and run: no witness, because the run needs a compiler `witness.sh`
+  cannot assume
 
 ## lua/ledger.lua
 
@@ -250,6 +259,16 @@ Fires:
   `fetch_manifest` writes, the `cat` that reads it back, and the argument `run`
   validates — and moving the redirect alone breaks the run while the other two keep
   stating the old path (witness: S1-bash-manifest_path-fires)
+- M1 — `validate_manifest` reaches what `fetch_manifest` produced only through
+  `/tmp/manifest.json`, a value `fetch_manifest` neither takes nor returns: the url
+  it takes and the bytes it returns both make `validate_manifest` answer 1
+  (witness: M1-bash-validate_manifest-fires). Declaring the path as a constant and
+  pairing the calls in a wrapper leaves both answers at 1, so the row does not
+  clear on a name; it clears when `fetch_manifest` takes the destination and
+  returns it. Not grouped under X5 with the S1 finding above at the same value, and
+  not with N1's: S1's smaller change — one home for the path — is the constant this
+  witness applies, and it clears S1 while leaving this row firing; N1's write is
+  still unstated by the name after the change that does clear this row
 - M3 — `fetch_manifest` reaches the network; `run` and `stamp` read the clock
 - M4, T3 — `handle_target`: if/elif on `$target`
 - N1 — `fetch_manifest` writes `/tmp/manifest.json`. (`run` retrying nothing is a
@@ -290,12 +309,21 @@ Fires:
 - L6 — `currentRegion` reassigned by `setRegion`; `cache` mutated by `persist`
 
 Silent:
-- M1 — `totals`: every listed item is caller-chosen
+- M1 — `totals`: every parameter is caller-chosen, it answers called alone, and
+  what `ingest` returns goes straight into it. `persist`'s product, the module-level
+  `cache`, is reached by no argument at all (witness: M1-js-totals-silent)
 
 ## swift/Ledger.swift
 
 Fires:
 - S1 — `requestTimeout` has no reader; 30 recurs as a literal in `fetch`
+- M1 — `Store.total(for:)` traps until `put` has run
+  (witness: M1-swift-Store_total-fires). `entries` being visible in the module is a
+  way to discover which ids are present, not a signature that makes the correct
+  order the only writable call. Not grouped with X1 below under X5, though a
+  `Decimal?` return clears both: executed, the smaller change — `guard let` with a
+  message naming the id — clears X1 and leaves this row firing, and X5's clause is
+  that a finding a smaller change clears alone was never one of the group
 - M3 — `stamp` and `fetch` reach `Date()`; `fetch` reaches the network
 - T1 — `Entry.created(id:amount:)` takes a raw `Decimal`, so a negative amount
   constructs and reaches `store.put`; `Amount` is on no path
@@ -325,6 +353,15 @@ Fires:
   `javac -Xlint:all` (witness: L3-java-RETRY_LIMIT-fires). Not S1 —
   within this tree nothing else states 3, so changing the one home changes
   nothing and the fact has no second home
+- M1 — `Store.total(id)` fails until `put` has run, and neither its signature nor
+  any type makes the correct order the only writable call
+  (witness: M1-java-Store_total-fires). It clears when `total` returns
+  `Optional<Double>`, so the call alone answers. Not grouped with X1 below under
+  X5, although that one change clears both: executed, the smaller change — throw,
+  naming the offending id — clears X1 and leaves this row firing, and X5's clause
+  is that a finding a smaller change clears alone was never one of the group. Also
+  distinct from X3, which an interface comment stating the ordering clears while
+  this row still fires
 - M4, T3 — `handle`: if/else-if on `entry.kind`
 - T1, T2 — `Entry` is a mutable bag of public fields; `validate` returns a
   boolean and `persist` takes the same raw `Entry`
@@ -353,6 +390,11 @@ Fires:
 - L3 — `RETRY_LIMIT` has no reader: deleting it rebuilds clean under `kotlinc`
   (witness: L3-kotlin-RETRY_LIMIT-fires). Not S1 — nothing else in this tree
   states 3
+- M1 — `Store.total(id)` fails until `put` has run
+  (witness: M1-kotlin-Store_total-fires). Exporting `ids()` beside it is a way for
+  a caller to discover which ids are present, not a signature that makes the
+  correct order the only writable call, so the row fires here as it does in java
+  and swift — the three are one shape, not three accidents of visibility
 - M3 — `stamp` and `fetchDeadline` reach `Instant.now`
 - M4, T3 — `handle`: if/else-if on a `String` kind, beside a sealed class that
   already models the same domain

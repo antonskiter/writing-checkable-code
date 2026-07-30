@@ -32,9 +32,9 @@ and generated source — never the diff alone.
 
 ### M1 · Module
 
-**Contract.** A simple interface over substantial work (Parnas; Ousterhout, deep modules).
+**Contract.** An interface gives the caller everything a call needs and nothing the caller must learn from inside the module (Parnas, information hiding; Ousterhout, information leakage).
 
-**Check.** Read the signature and its comment: a parameter, field or ordering requirement whose value the caller can obtain only from this module is a leak.
+**Check.** Call each unit the module offers, writing every argument from the signatures alone: one that fails until another unit of this module has run leaks an ordering requirement, and one that reaches what another unit produced only by passing a value that unit neither took nor returned leaks that value. Neither is a leak where a type leaves the correct call as the only one writable — the earlier unit returns what the later one takes. No count of parameters is a leak, and neither is a parameter whose value the caller chooses, however many there are and however narrow the set the body honours. The row clears when the leaking call can no longer be written, not when the module adds a name for the leaked value.
 
 ### M2 · Module
 

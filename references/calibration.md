@@ -10,7 +10,7 @@ the rest of the file is not needed.
 - [S1 — a value with one home](#s1)
 - [S2 — copies that are alike by coincidence](#s2)
 - [S3 — an acyclic codebase with no declared layers](#s3)
-- [M1 — a wide signature that leaks nothing](#m1)
+- [M1 — a wide signature, a missing seam, a thin unit](#m1)
 - [T3, M4 — one value compared against different others](#t3-m4)
 - [T3 — an exhaustive match over a closed sum](#t3)
 - [F2 — a body in a build with no complexity checker](#f2)
@@ -53,11 +53,41 @@ finding is the file's.
 ## M1
 
 A formatting function taking seven parameters — label, value, unit, precision,
-alignment, width, fill. Wide, but every one of the seven is a value the caller
-chooses and can supply without knowing anything about the module. **Silent.** No
-row counts parameters: two rules that did were tried, failed testing and were
-removed, one measuring literal frequency across call sites and one asking whether
-a caller would pass a different value.
+alignment, width, fill. The clause: *no count of parameters is a leak, and
+neither is a parameter whose value the caller chooses, however many there are and
+however narrow the set the body honours*. Every one of the seven is the caller's
+own value, the call answers with nothing else of the module having run, and it
+consumes nothing another unit produced. **Silent.** Executed on two of them, one
+with an interface docstring and one without, both answering at width 10
+(witness: M1-python-render_row-silent) — the docstring moves neither verdict,
+because this row reads signatures and X3 reads the comment. No row counts
+parameters: two rules that did were tried, failed testing and were removed, one
+measuring literal frequency across call sites and one asking whether a caller
+would pass a different value.
+
+Narrow accepted sets are part of that clause. A formatter honouring `"right"` and
+treating everything else as left, a dispatcher honouring three carrier names — the
+set lives in the body, but the argument is still the caller's to choose, so the
+row is silent and L2 is the row that fires on the unrecognised value.
+
+A unit that fails for want of the network, the clock or a socket is M3's, not an
+ordering leak. The discriminator is *until another unit of this module has run*:
+executed, `worker.fetch_with_retry`, `js retry` and `go Fetch` all fail against an
+unreachable address, and no unit of their own module makes any of them succeed,
+while `Store.total` answers as soon as `put` has run.
+
+Reaching what a producer stored through an argument the caller already owns is not
+the value half. `Store.put(id, amount)` then `Store.total(id)` passes back the
+caller's own id; `go Put` then `Summarise()` passes nothing at all; `lua persist`
+then `ids()` passes nothing. **Silent on the value half** in all three — the leak
+is a value the producing unit *neither took nor returned*, which is what
+`fetch_manifest`'s `/tmp/manifest.json` is.
+
+A thin unit is not a leak either. A one-line reader returning a module constant, a
+wrapper that sorts what another unit returned — **silent**, and no row in the
+document measures depth. The Contract states leakage only, because no check
+decided depth: the shape a check can decide is what the interface withholds, not
+how much work sits behind it. Shallowness is owned by no row, deliberately.
 
 ## T3, M4
 
