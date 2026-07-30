@@ -101,7 +101,8 @@ func renderRow(
     label: String, amount: Decimal, unit: String, precision: Int,
     align: String, width: Int, fill: Character
 ) -> String {
-    let text = "\(label)\(unit)"
+    let formatted = String(format: "%.\(precision)f", NSDecimalNumber(decimal: amount).doubleValue)
+    let text = "\(label)\(formatted)\(unit)"
     let pad = String(repeating: String(fill), count: max(0, width - text.count))
     if align == "right" {
         return pad + text

@@ -92,10 +92,20 @@ Fires:
 - X1 — `process` completes normally for a bad record and the message it logs omits
   the offending value (witness: X1-python-ingest-process-fires); unknown kind
   produces `{"status": "ok"}`
+- X3 — `process` carries no comment: a call written from its signature alone passes
+  the record the parameter names and is refused, and the mapping a correct call
+  answers with carries a `timeout` the signature never mentions, taken from the
+  environment (witness: X3-python-ingest-process-fires)
 - X4 — `stamp` embeds the clock
 - L1 — `except Exception: pass` in `process` discards the error and the caller
   receives None (witness: L1-python-ingest-process-fires)
 - L2 — `handle_event` else-branch routes to `_on_created`
+- L3 — `RETRY_TIMEOUT` has no reader: deleting it leaves every module in the tree
+  importable and every answer unchanged
+  (witness: L3-python-ingest-RETRY_TIMEOUT-fires). S1 above is a second defect at
+  the same constant, not this one under another name: the deletion this row asks
+  for leaves the deadline stated twice, and wiring one literal to the constant
+  clears this row while S1 keeps firing
 
 Silent:
 - S2 — `_on_created`/`_on_updated`/`_on_deleted`: identical bodies free to diverge
@@ -108,11 +118,19 @@ Silent:
 
 Fires:
 - T1 — `Interval(60, 0)` constructs; the value reaches `render_row` arithmetic
+- T2 — `classify`'s refusal of an interval that ends before it starts is the check,
+  and it hands back a string: the refused value is obtainable without running it,
+  and `render_row` takes the same raw `Interval` and computes a negative span
+  (witness: T2-python-report-Interval-fires)
 - X2 — executed: 5 of 5 mutants survive the suite (`rjust`->`ljust`, span sign
   flip, `"holiday"`->`"past"`, `>`->`>=`, `<=`->`<`). Body deletion is not
   decisive here: stubbing to a same-typed constant leaves all three tests green,
   stubbing to `None` fails two — which is why X2 checks mutants
 - X1, L2 — `render_row` silently left-aligns any `align` other than `"right"`
+- X3 — `classify` carries no comment: the unit of `now` is stated only in
+  `Interval`'s, so one situation answers `future` under minutes since midnight and
+  `past` under a clock reading of the same moment
+  (witness: X3-python-report-classify-fires)
 
 - F4 — `classify` tests `start > now` before `start in holidays`, so a future
   holiday never classifies as a holiday; permuting the two branches changes the
@@ -132,11 +150,24 @@ Silent:
 
 Fires:
 - S1 — `RequestTimeout` has no reader; 30s recurs as literals in `Fetch` and `Handle`
+- M2 — `Put` writes into a package-level map rather than a store it receives: two
+  runs in one process share it, and no caller outside the package can supply
+  another, the assignment being module-private (witness: M2-go-Put-fires)
 - M3 — `Fetch` builds its own `http.Client`; `Handle` reads the clock
+- M4, T3 — `Describe`: a type switch on one value whose `default` arm forfeits
+  exhaustiveness, so a member added to the kinds it dispatches on builds clean and
+  is answered by a real case instead of breaking the build, and a duplicated case
+  has nowhere to land but the body of `Describe` itself
+  (witnesses: T3-go-Describe-fires, M4-go-Describe-fires)
 - T1, T2 — `Record{Amount: -5}` constructs and is stored; `validate`'s verdict is discarded
+- N1 — `Handle` writes the decoded record into the package store
+  (witness: N1-go-Handle-fires)
 - X1 — `Put` says "invalid record" without the value; `Fetch` answers an
   unreachable address with no response and no error
   (witness: X1-go-Put_Fetch-fires)
+- X3 — nothing states what `Fetch` answers for an unreachable address, so a call
+  written from its signature alone — a nil error, therefore a usable response —
+  dereferences nil (witness: X3-go-Fetch-fires)
 - X4 — `Summarise` returns map keys in iteration order, which Go randomises per
   process (witness: X4-go-Summarise-fires)
 - L1 — `_ = validate(r)` in `Handle` discards a verdict that is really there, so a
@@ -144,6 +175,11 @@ Fires:
   (witness: L1-go-Handle-fires); `Fetch` converts its error away
 - L2 — `Describe` default returns `"text"`, aliasing a real case
   (witness: L2-go-Describe-fires)
+- L3 — `RequestTimeout` has no reader: deleting it vets clean with every answer
+  unchanged (witness: L3-go-RequestTimeout-fires). S1 above is a second defect at
+  the same constant, not this one under another name: the deletion this row asks
+  for leaves the deadline stated twice, and wiring one literal to the constant
+  clears this row while S1 keeps firing
 - L5 — `//nolint:errcheck` with no owner or expiry
 - L6 — `region` reassigned in `init` and `SetRegion`; `cache` mutated by `Put`
 
@@ -161,10 +197,19 @@ Fires:
 - S1 + N2 + X5 — `RETRY_LIMIT` and `MAX_RETRIES`: one fact in two homes, two names
   for one concept, reported at S1. X5 groups them: deleting the second home clears
   both, and no smaller change clears N2 alone
+- M2 — `retry` spends a module-level retry budget rather than one it receives: two
+  runs in one process spend the same 3, and the binding refuses a second value
+  (witness: M2-ts-retry-fires)
 - M3 — `stamp` reaches `Date.now`; `retry` reaches `fetch`
+- T1 — the state `isOrder` names inhabits `Order` all the same, through `load`'s
+  cast, and reaches the arithmetic in `totals` and `persist`
+  (witness: T1-ts-load-fires)
 - T2 — `isOrder` returns boolean; `ingest` casts `as Order`
 - T3 — `handle` dispatches on `event.kind`; the `default` arm defeats exhaustiveness
 - X1 — "bad order" omits the value; `load` returns `[]` for malformed input
+- X3 — `load` promises `Order[]` and answers a JSON document that is not an array
+  with the parsed object itself, so mapping over the rows it returns throws
+  (witness: X3-ts-load-fires)
 - X4 — `stamp` embeds the clock
 - L1 — `catch {}` in `ingest`; `catch (e) {}` in `load`
 - L2 — `handle` default returns `"ok"`
@@ -200,7 +245,11 @@ Silent:
 ## bash/deploy.sh
 
 Fires:
-- S1 — 30s appears in `fetch_manifest`'s `--max-time` and `run`'s deadline
+- S1 — 30s appears in `fetch_manifest`'s `--max-time` and `run`'s deadline;
+  separately, `/tmp/manifest.json` is one path in three homes — the redirect
+  `fetch_manifest` writes, the `cat` that reads it back, and the argument `run`
+  validates — and moving the redirect alone breaks the run while the other two keep
+  stating the old path (witness: S1-bash-manifest_path-fires)
 - M3 — `fetch_manifest` reaches the network; `run` and `stamp` read the clock
 - M4, T3 — `handle_target`: if/elif on `$target`
 - N1 — `fetch_manifest` writes `/tmp/manifest.json`. (`run` retrying nothing is a
@@ -257,7 +306,8 @@ Fires:
   (witness: T4-swift-CappedStore-fires)
 - N1 — `fetch` hides a 30-second busy-wait; `apply` always returns `"ok"`
 - X1 — `store`'s `catch` returns `"ok"` on failure; `"bad input"` omits the
-  value; `total(for:)` force-unwraps
+  value; `total(for:)` force-unwraps; an unknown `align` is silently left-aligned
+  by `renderRow` rather than refused (witness: X1-swift-renderRow-fires)
 - X4 — `ids()` returns dictionary keys in per-process hash order
 - L1 — `try?` in `decode` discards the error; `catch { return "ok" }`
 - L2 — `decode` returns `.created` for any object carrying an id
