@@ -17,8 +17,14 @@ lua5.4, node, bash -n, swiftc -typecheck, javac 21, kotlinc 2.1.
 `lint.sh` runs each language's standard linter over these files. **Every finding
 it prints is intentional bait, listed below under the rule it baits.** A finding
 absent from this file is a defect in the fixture and is fixed there, not
-recorded. Missing linters are reported as SKIPPED with a non-zero exit, never
-passed over in silence.
+recorded. The same findings are checked in as `(linter, code)` pairs in
+`lint.baseline`, and `lint.sh` exits non-zero unless the run reproduces that
+multiset exactly — a new finding and a bait that stopped firing both fail, with
+a diff. Regenerate the baseline with `./lint.sh --update-baseline` when a
+fixture changes on purpose, and update the table below to match. Missing linters
+are reported as SKIPPED with a non-zero exit, never passed over in silence;
+their baseline entries are excluded from the diff, so an absent toolchain is not
+misreported as fixture drift.
 
 What the linters find, and what they miss:
 
@@ -26,13 +32,15 @@ What the linters find, and what they miss:
 |---|---|---|
 | ruff | `S110`, `BLE001` | L1 (`except Exception: pass`) |
 | eslint | `no-empty`, `no-unused-vars` | L1 (`catch (e) {}`) |
-| luacheck | `setting non-standard global` | L6 (`RETRY_LIMIT`) |
-| luacheck | `variable 'region' is never accessed` | L3 (dead write) |
-| luacheck | `unused argument 'entry'` ×2 | none — a side effect of S2's stub handlers, which must keep identical bodies |
+| luacheck | `W111` setting non-standard global | L6 (`RETRY_LIMIT`) |
+| luacheck | `W231` variable `region` is never accessed | L3 (dead write) |
+| luacheck | `W212` unused argument `entry` ×2 | none — a side effect of S2's stub handlers, which must keep identical bodies |
 | shellcheck | `SC2034` ×2 | L3 (`RETRY_LIMIT`, `REGION` unused) |
 
 `go vet`, `swiftc`, `javac -Xlint:all` and `kotlinc` report nothing on these
-files at all. No linter in any of the nine languages finds S1, S2, S3, M1, M2,
+files at all. The go fixtures are a bare package with no module file, so
+`lint.sh` vets them in GOPATH mode (`GO111MODULE=off`); in module mode `go vet`
+aborts before analysing anything. No linter in any of the nine languages finds S1, S2, S3, M1, M2,
 M4, T1, T2, T4, F3, F4, N1, N2, X1, X2 or X4 — the bait for those rules compiles
 and lints clean, which is the case for the document existing.
 

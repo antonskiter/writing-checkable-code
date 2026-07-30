@@ -1,0 +1,14 @@
+# Expected linter findings over the fixtures: one "<linter> <code>"
+# line per finding, sorted. Every entry is intentional bait, recorded
+# in CORPUS.md under the rule it baits. Regenerate with
+# ./lint.sh --update-baseline after changing a fixture on purpose.
+eslint no-empty
+eslint no-unused-vars
+luacheck W111
+luacheck W212
+luacheck W212
+luacheck W231
+ruff BLE001
+ruff S110
+shellcheck SC2034
+shellcheck SC2034
