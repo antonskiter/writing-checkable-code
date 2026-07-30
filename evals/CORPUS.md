@@ -116,8 +116,9 @@ Silent:
 ## ts/orders.ts + report.ts
 
 Fires:
-- S1 + N2 — `RETRY_LIMIT` and `MAX_RETRIES`: one fact in two homes, two names for
-  one concept; one defect under the convergence rule
+- S1 + N2 + X5 — `RETRY_LIMIT` and `MAX_RETRIES`: one fact in two homes, two names
+  for one concept, reported at S1. X5 groups them: deleting the second home clears
+  both, and no smaller change clears N2 alone
 - M3 — `stamp` reaches `Date.now`; `retry` reaches `fetch`
 - T2 — `isOrder` returns boolean; `ingest` casts `as Order`
 - T3 — `handle` dispatches on `event.kind`; the `default` arm defeats exhaustiveness
