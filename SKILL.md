@@ -5,12 +5,9 @@ description: Use when writing or reviewing code and a design decision is in play
 
 # Code Contracts
 
-A declaration is an artifact a run can contradict — a type, a schema, a
-registry, a test, a build gate. A comment asserting one is not a declaration.
+A declaration is an artifact a run can contradict — a type, a schema, a registry, a test, a build gate. A comment asserting one is not a declaration.
 
-A search for a second home, a reader or an entry point is over the whole tree
-the build reads at the revision under review — every language, schema, manifest
-and generated source — never the diff alone.
+A search for a second home, a reader or an entry point is over the whole tree the build reads at the revision under review — every language, schema, manifest and generated source — never the diff alone.
 
 ### S1 · System
 
@@ -146,17 +143,9 @@ and generated source — never the diff alone.
 
 **Check.** Apply the change as a diff, then re-decide each row by its own check — a run where the check runs, the comparison the check names where it does not — recording what each returns per site, before and after. A site no longer named is cleared; a row moving from firing to unverified is not. A site still named is a separate defect; a row that begins firing is a defect the change introduced; a finding some smaller change clears alone was never one of the group. Removing a unit instead of repairing it is L3's finding, not a change. An unapplied change, or an untried smaller one, groups nothing: the grouping is unverified and each finding is reported alone.
 
-Report each group at the row whose check the change answers, naming its sites.
-Order what remains by consequence: a wrong answer, then a state that produces
-one, then a missing seam, then missing evidence.
+Report each group at the row whose check the change answers, naming its sites. Order what remains by consequence: a wrong answer, then a state that produces one, then a missing seam, then missing evidence.
 
-A finding the reviewed file cannot decide — F2's absent complexity checker, S3's
-undeclared layer map — is the repository's and not the file's: the same one holds
-for every file in the tree. Report it once, under the repository, after the file's
-findings and not among them, naming the absent artifact. Restated per file, per
-body or per unit it is still one finding, and the number of files it is restated
-in says nothing about any of them. Its absence from a file's findings is not a
-pass for that file.
+A finding the reviewed file cannot decide — F2's absent complexity checker, S3's undeclared layer map — is the repository's and not the file's: the same one holds for every file in the tree. Report it once, under the repository, after the file's findings and not among them, naming the absent artifact. Restated per file, per body or per unit it is still one finding, and the number of files it is restated in says nothing about any of them. Its absence from a file's findings is not a pass for that file.
 
 ## Mechanical
 
@@ -171,7 +160,12 @@ Fail the build on:
 
 ## When a verdict is unclear
 
-`references/calibration.md` records, per row, the shape it is drawn to and must
-not fire on, with the clause that spares it. Read the entry for the row in
-doubt; each one was a false positive before it was a clause. A resemblance to a
-recorded shape never stands in for running the check.
+`references/calibration.md` records, per row, the shape it is drawn to and must not fire on, with the clause that spares it. Read the entry for the row in doubt; each one was a false positive before it was a clause. A resemblance to a recorded shape never stands in for running the check.
+
+## Keywords
+
+Reach for: twelve-factor · separation of concerns · logs as event streams · syslog severities · event-driven · table-driven dispatch · trusted libs · lint gate · autoformat · fail fast · single source of truth · parse, don't validate · illegal states unrepresentable · functional core, imperative shell · dependency injection · idempotent · deterministic · do one thing well · explicit over implicit · least astonishment · least privilege · crash-only · mock the boundary only
+
+Live by: premature optimization is the root of all evil · make it work, make it right, make it fast · the best code is no code · choose boring technology · proudly found elsewhere · Chesterton's fence · errors should never pass silently · two hard things: cache invalidation and naming · hope is not a strategy · YAGNI
+
+Refuse — NEVER, not even once, not even "temporarily": magic numbers · busy-wait & sleep-sync · timeouts as schedulers (they detect faults) · rolling your own · regex as parser · grep as proof · `|| true` · `2>/dev/null` · set -e as error handling · tests never seen failing · TODO without owner · trusting the diff over the tree
