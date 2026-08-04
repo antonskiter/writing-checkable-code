@@ -169,3 +169,14 @@ Reach for: twelve-factor · separation of concerns · logs as event streams · s
 Live by: premature optimization is the root of all evil · make it work, make it right, make it fast · the best code is no code · choose boring technology · proudly found elsewhere · Chesterton's fence · errors should never pass silently · two hard things: cache invalidation and naming · hope is not a strategy · YAGNI
 
 Refuse — NEVER, not even once, not even "temporarily": magic numbers · busy-wait & sleep-sync · timeouts as schedulers (they detect faults) · rolling your own · regex as parser · grep as proof · `|| true` · `2>/dev/null` · set -e as error handling · tests never seen failing · TODO without owner · trusting the diff over the tree
+
+## Appendix · Additional triggers
+
+- unix logging conventions, log levels, verbosity flag, structured logs, log destination (stdout/stderr)
+- config vs. environment vs. data vs. logic separation — no setting hardcoded in code, ever
+- linter, formatter, prettier, eslint, pre-commit hooks, CI lint/format gate
+- injection, untrusted input, shell/query/template escaping, trust boundary
+- resource cleanup, file handles, connections, locks, listeners, exit paths
+- dependency pinning, lockfile, floating versions
+- shared state, concurrency, thread safety, race conditions
+- event/callback/notification for sequencing; timeouts and sleep loops for failures only
