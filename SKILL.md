@@ -175,22 +175,3 @@ Fail the build on:
 not fire on, with the clause that spares it. Read the entry for the row in
 doubt; each one was a false positive before it was a clause. A resemblance to a
 recorded shape never stands in for running the check.
-
-## Keywords
-
-Defaults while writing, before any row can fire:
-
-- **separate logic / config / data / content** — config is one enumerable
-  surface resolved at the entry point; state lives under XDG paths; no
-  deployment fact inside logic
-- **standard unix log** — diagnostics to stderr with severity, verbosity a
-  config lever; stdout carries only the data asked for
-- **no hardcoded values** — a literal that is a decision is a named setting
-- **sync by notification, not by sleep** — the ready party signals, the
-  waiter blocks on the trigger
-- **timeouts detect faults** — a wait bounds failure loudly; it is never the
-  mechanism that makes a thing work
-- **dispatch, not elif** — a new case is a unit, a table entry, or a sum-type
-  arm
-- **established lib first** — stdlib or a proven library before hand-rolling
-  a parser, retry, cache, or algorithm
