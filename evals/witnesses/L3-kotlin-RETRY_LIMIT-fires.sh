@@ -7,7 +7,8 @@ command -v kotlinc >/dev/null 2>&1 || { printf 'kotlinc not installed\n'; exit 7
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 cp -r kotlin "$tmp/tree"
-mapfile -t sources < <(find "$tmp/tree" -name '*.kt' | sort)
+sources=()
+while IFS= read -r f; do sources+=("$f"); done < <(find "$tmp/tree" -name '*.kt' | sort)
 
 base=$(kotlinc "${sources[@]}" -d "$tmp/before" 2>&1)
 [ -z "$base" ] || {

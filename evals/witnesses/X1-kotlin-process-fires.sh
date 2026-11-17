@@ -2,7 +2,7 @@
 # X1 fires on kotlin/Ledger.kt process and persist: process(null, 5.0) completes
 # normally as "bad record" plus null, and persist's require message omits the id.
 cd "$(dirname "$0")/.." || exit 1
-command -v kotlinc >/dev/null 2>&1 && command -v java >/dev/null 2>&1 || {
+command -v kotlinc >/dev/null 2>&1 && java -version >/dev/null 2>&1 || {
   printf 'kotlinc or java not installed\n'; exit 77; }
 stdlib=$(dirname "$(dirname "$(readlink -f "$(command -v kotlinc)")")")/lib/kotlin-stdlib.jar
 [ -f "$stdlib" ] || { printf 'kotlin-stdlib.jar not found beside kotlinc\n'; exit 77; }
@@ -26,7 +26,8 @@ build=$(kotlinc "$tmp/Ledger.kt" "$tmp/X1Probe.kt" -d "$tmp/out" 2>&1) || {
   printf 'kotlinc failed on the fixture plus probe: %s\n' "$build"; exit 1; }
 out=$(java -cp "$tmp/out:$stdlib" X1ProbeKt 2>&1) || {
   printf 'probe exited non-zero: %s\n' "$out"; exit 1; }
-mapfile -t line <<<"$out"
+line=()
+while IFS= read -r l; do line+=("$l"); done <<<"$out"
 
 [ "${line[0]}" = 'bad record' ] || {
   printf 'process(null, 5.0) printed %s; expected the value-free "bad record"\n' "${line[0]}"; exit 1; }

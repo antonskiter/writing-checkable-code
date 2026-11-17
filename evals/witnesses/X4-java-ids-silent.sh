@@ -2,7 +2,7 @@
 # X4 stays silent on java/Ledger.java ids(): the HashMap key order it returns is
 # identical across seven fresh JVMs started from two directories.
 cd "$(dirname "$0")/.." || exit 1
-command -v javac >/dev/null 2>&1 && command -v java >/dev/null 2>&1 || {
+javac -version >/dev/null 2>&1 && java -version >/dev/null 2>&1 || {
   printf 'javac or java not installed\n'; exit 77; }
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT

@@ -10,7 +10,7 @@
 #     total(id) alone still failing;
 #   - returning Optional<Double> clears the row: the call alone answers.
 cd "$(dirname "$0")/.." || exit 1
-command -v javac >/dev/null 2>&1 && command -v java >/dev/null 2>&1 || {
+javac -version >/dev/null 2>&1 && java -version >/dev/null 2>&1 || {
   printf 'javac or java not installed\n'; exit 77; }
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT

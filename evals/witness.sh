@@ -34,12 +34,12 @@ one() {
 export -f one
 
 find witnesses -name "*${1:-}*.sh" -print0 |
-  xargs -0 -P "$(nproc)" -I{} bash -c 'one "$@"' _ {}
+  xargs -0 -P "$(getconf _NPROCESSORS_ONLN)" -I{} bash -c 'one "$@"' _ {}
 
 for r in "$reports"/*; do cat "$r"; done
 printf '\n%s passed, %s failed, %s skipped\n' \
-  "$(grep -lc '^PASS ' "$reports"/* 2>/dev/null | wc -l)" \
-  "$(grep -lc '^FAIL ' "$reports"/* 2>/dev/null | wc -l)" \
-  "$(grep -lc '^SKIP ' "$reports"/* 2>/dev/null | wc -l)"
+  "$(cat "$reports"/* 2>/dev/null | grep -c '^PASS ')" \
+  "$(cat "$reports"/* 2>/dev/null | grep -c '^FAIL ')" \
+  "$(cat "$reports"/* 2>/dev/null | grep -c '^SKIP ')"
 
 ! grep -q '^FAIL \|^SKIP ' "$reports"/* && [ -n "$(ls -A "$reports")" ]

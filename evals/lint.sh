@@ -41,7 +41,7 @@ codes() {
 run() {
   local name=$1 bin=$2 out
   shift 2
-  if ! command -v "$bin" >/dev/null 2>&1; then
+  if ! { "$bin" --version || "$bin" -version || "$bin" version; } >/dev/null 2>&1; then
     printf '%-10s SKIPPED (%s not installed)\n' "$name" "$bin"
     skipped+=("$bin")
     status=1
@@ -53,7 +53,7 @@ run() {
   printf '%s\n' "$out" | codes "$bin" | sed "s/^/$bin /" >>"$emitted"
 }
 
-run python  ruff       ruff check python/
+run python  ruff       ruff check python/ service/
 run js      eslint     eslint -c eslint.config.mjs js/orders.js
 run lua     luacheck   luacheck --no-color --codes lua/ledger.lua
 run bash    shellcheck shellcheck -S warning bash/deploy.sh

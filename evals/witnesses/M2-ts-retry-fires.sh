@@ -13,7 +13,7 @@ node "$tmp/probe.ts" >/dev/null 2>&1 || {
 # type-only import as a type and names the file it resolves to. Nothing else is changed.
 imports=$(grep -cF 'import { Order } from "./orders";' "$tmp/report.ts")
 [ "$imports" = 1 ] || { printf 'expected one type-only import to adapt, found %s\n' "$imports"; exit 1; }
-sed -i 's|import { Order } from "./orders";|import type { Order } from "./orders.ts";|' "$tmp/report.ts"
+sed 's|import { Order } from "./orders";|import type { Order } from "./orders.ts";|' "$tmp/report.ts" >"$tmp/report.ts.new" && mv "$tmp/report.ts.new" "$tmp/report.ts"
 
 # The setting reaches retry by no parameter of its own.
 grep -qxF 'export function retry(url: string): Promise<Response> {' "$tmp/orders.ts" || {

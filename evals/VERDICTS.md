@@ -11,8 +11,8 @@ check is validated by re-running it here: every "fires" entry must still fire,
 every "silent" entry must stay silent.
 
 Each section below is one tree under review, and the rows that search a tree —
-S1, S2, L3, N2 — are decided within it. The nine language directories are
-unrelated programs that share a parent, so a fact recurring across two of them
+S1, S2, L3, N2 — are decided within it. The language directories and `service/`
+are unrelated programs that share a parent, so a fact recurring across two of them
 is not a second home: the 30-second deadline is eight separate S1 findings, one
 per tree, not one fact in twelve homes.
 
@@ -25,6 +25,17 @@ and **S3** — no layer map is declared anywhere in it, so placement is unverifi
 over all 11 units of those three trees, every one of which takes a number with no
 cycle (witness: S3-tree-placement-silent). Neither is restated per section: a
 finding a reviewed file cannot decide is reported once, under the repository.
+
+**X6** and **X7** have no site outside `service/`. No other tree starts work
+against an owner it closes, holds a connection or opens a transaction: `go Fetch`
+returns its response to the caller, `js retry` and `ts retry` hand back the
+promise they create, and the swift, bash and lua fetches block until they answer.
+Both rows are silent in every other section, and are not restated there.
+
+Two clauses rest on comparison alone, with no witness: X2's test of a built
+artifact, and X7's interleaving of two read-modify-write transactions. No tree
+carries a test of a built artifact, or a store whose snapshot a run can
+interleave.
 
 An entry that names a witness — `(witness: X4-bash-stamp-fires)` — is decided by
 `./witness.sh`, which runs that script and fails when the verdict stops holding.
@@ -64,7 +75,7 @@ What the linters find, and what they miss:
 files at all. The go fixtures are a bare package with no module file, so
 `lint.sh` vets them in GOPATH mode (`GO111MODULE=off`); in module mode `go vet`
 aborts before analysing anything. No linter in any of the nine languages finds S1, S2, S3, M1, M2,
-M4, T1, T2, T4, F3, F4, N1, N2, X1, X2 or X4 — the bait for those rules compiles
+M4, T1, T2, T4, T5, F3, F4, N1, N2, X1, X2, X4, X6 or X7 — the bait for those rules compiles
 and lints clean, which is the case for the document existing.
 
 Ruff also reports `PLR0917` (7 positional arguments) on `render_row` under
@@ -92,10 +103,12 @@ Fires:
 - X1 — `process` completes normally for a bad record and the message it logs omits
   the offending value (witness: X1-python-ingest-process-fires); unknown kind
   produces `{"status": "ok"}`
-- X3 — `process` carries no comment: a call written from its signature alone passes
-  the record the parameter names and is refused, and the mapping a correct call
-  answers with carries a `timeout` the signature never mentions, taken from the
-  environment (witness: X3-python-ingest-process-fires)
+- X3 — the answer is a record, which a typed dict or a dataclass carries, and
+  `process`'s signature does not type it: the mapping a correct call answers with
+  carries a `timeout` the signature never mentions, taken from the environment.
+  That `raw` is JSON text is a fact no type carries, so it belongs in the comment,
+  and there is none: a call written from the signature alone passes the record the
+  parameter names and is refused (witness: X3-python-ingest-process-fires)
 - X4 — `stamp` embeds the clock
 - L1 — `except Exception: pass` in `process` discards the error and the caller
   receives None (witness: L1-python-ingest-process-fires)
@@ -113,6 +126,8 @@ Silent:
   value, and with a gate installed at 10 no body in this tree is over budget. The
   absent checker is the repository's finding above, not this file's
 - L6 — `RETRY_TIMEOUT` and `log` are never reassigned or mutated
+- T5 — unverified rather than silent: no signature in these files carries
+  parameter types
 
 ## python/report.py + test_report.py
 
@@ -127,9 +142,10 @@ Fires:
   decisive here: stubbing to a same-typed constant leaves all three tests green,
   stubbing to `None` fails two — which is why X2 checks mutants
 - X1, L2 — `render_row` silently left-aligns any `align` other than `"right"`
-- X3 — `classify` carries no comment: the unit of `now` is stated only in
-  `Interval`'s, so one situation answers `future` under minutes since midnight and
-  `past` under a clock reading of the same moment
+- X3 — `classify`'s signature carries no type for `now`, though the standard
+  library has time types that carry a unit; the unit is stated only in
+  `Interval`'s comment, so one situation answers `future` under minutes since
+  midnight and `past` under a clock reading of the same moment
   (witness: X3-python-report-classify-fires)
 
 - F4 — `classify` tests `start > now` before `start in holidays`, so a future
@@ -150,6 +166,8 @@ Silent:
 - F2 — no body in this tree is over budget under a gate installed at 10; the
   absent checker is the repository's finding above
   (witness: F2-tree-bodies-silent)
+- T5 — unverified rather than silent: `classify` and `render_row` carry no
+  parameter types
 
 ## go/store.go + handler.go
 
@@ -170,9 +188,10 @@ Fires:
 - X1 — `Put` says "invalid record" without the value; `Fetch` answers an
   unreachable address with no response and no error
   (witness: X1-go-Put_Fetch-fires)
-- X3 — nothing states what `Fetch` answers for an unreachable address, so a call
-  written from its signature alone — a nil error, therefore a usable response —
-  dereferences nil (witness: X3-go-Fetch-fires)
+- X3 — `Fetch` answers an unreachable address with a nil response and a nil
+  error. No type carries that pair, so it belongs in the comment, and `Fetch` has
+  none: a call written from the signature alone — a nil error, therefore a usable
+  response — dereferences nil (witness: X3-go-Fetch-fires)
 - X4 — `Summarise` returns map keys in iteration order, which Go randomises per
   process (witness: X4-go-Summarise-fires)
 - L1 — `_ = validate(r)` in `Handle` discards a verdict that is really there, so a
@@ -195,6 +214,9 @@ Silent:
 - F2 — `Describe` is the worst body in this package at McCabe 5 under a gate
   installed at 10; the absent checker is the repository's finding above
   (witness: F2-tree-bodies-silent)
+- T5 — `Put` and `validate` return the refusal as an error; `Handle` answers a
+  malformed payload with a nil slice its type admits, which X1 and L1 carry;
+  `Fetch`'s unreachable address is the I/O edge
 
 ## ts/orders.ts + report.ts
 
@@ -212,7 +234,9 @@ Fires:
 - T2 — `isOrder` returns boolean; `ingest` casts `as Order`
 - T3 — `handle` dispatches on `event.kind`; the `default` arm defeats exhaustiveness
 - X1 — "bad order" omits the value; `load` returns `[]` for malformed input
-- X3 — `load` promises `Order[]` and answers a JSON document that is not an array
+- X3 — `load` answers a JSON document that is not an array with something other
+  than `Order[]`; the language carries that answer in a type — a union with the
+  parsed value, a result — and the signature does not: it is answered
   with the parsed object itself, so mapping over the rows it returns throws
   (witness: X3-ts-load-fires)
 - X4 — `stamp` embeds the clock
@@ -227,6 +251,9 @@ Silent:
   takes, so the composition is writable from the signatures alone. Executed under
   `tsc --strict` and run: no witness, because the run needs a compiler `witness.sh`
   cannot assume
+- T5 — `ingest` declares the refusal in `Order | null`; `load` answers malformed
+  text with an empty array its type admits, which X1 carries; `retry`'s rejection
+  is the I/O edge
 
 ## lua/ledger.lua
 
@@ -250,6 +277,7 @@ Fires:
 
 Silent:
 - S2 — `on_created` and `on_updated`: identical bodies free to diverge
+- T5 — unverified: no signature carries types
 
 ## bash/deploy.sh
 
@@ -285,6 +313,7 @@ Fires:
 
 Silent:
 - S2 — `deploy_staging` and `deploy_prod`: identical bodies free to diverge
+- T5 — unverified: no function declares parameters
 
 Note: shellcheck flags `RETRY_LIMIT` and `REGION` as unused (SC2034), which is
 L3's finding arriving from the toolchain rather than the rule.
@@ -312,12 +341,14 @@ Silent:
 - M1 — `totals`: every parameter is caller-chosen, it answers called alone, and
   what `ingest` returns goes straight into it. `persist`'s product, the module-level
   `cache`, is reached by no argument at all (witness: M1-js-totals-silent)
+- T5 — unverified: no signature carries types
 
 ## swift/Ledger.swift
 
 Fires:
 - S1 — `requestTimeout` has no reader; 30 recurs as a literal in `fetch`
-- M1 — `Store.total(for:)` traps until `put` has run
+- M1 — `Store.total(for:)` traps until `put` has run, ending the process on
+  SIGILL or SIGTRAP depending on the architecture
   (witness: M1-swift-Store_total-fires). `entries` being visible in the module is a
   way to discover which ids are present, not a signature that makes the correct
   order the only writable call. Not grouped with X1 below under X5, though a
@@ -332,6 +363,9 @@ Fires:
 - T4 — `CappedStore` fails the `Store` put-then-get contract that `Store` passes,
   the suite parameterized over the constructor
   (witness: T4-swift-CappedStore-fires)
+- T5 — `Store.total(for:)` answers an absent id, which `String` permits, with a
+  trap the signature does not declare (the trap is asserted by witness:
+  M1-swift-Store_total-fires)
 - N1 — `fetch` hides a 30-second busy-wait; `apply` always returns `"ok"`
 - X1 — `store`'s `catch` returns `"ok"` on failure; `"bad input"` omits the
   value; `total(for:)` force-unwraps; an unknown `align` is silently left-aligned
@@ -345,6 +379,8 @@ Fires:
 Silent:
 - T3 — `apply`'s `switch` over `Entry` is an exhaustive match over a closed sum:
   adding a member breaks the build (witness: T3-swift-apply-silent)
+- T5 — `decode` and `fetch` declare the absent case as an optional, and
+  `Amount`'s failable initializer does the same
 
 ## java/Ledger.java
 
@@ -359,8 +395,9 @@ Fires:
   `Optional<Double>`, so the call alone answers. Not grouped with X1 below under
   X5, although that one change clears both: executed, the smaller change — throw,
   naming the offending id — clears X1 and leaves this row firing, and X5's clause
-  is that a finding a smaller change clears alone was never one of the group. Also
-  distinct from X3, which an interface comment stating the ordering clears while
+  is that a finding a smaller change clears alone was never one of the group. The
+  exception that change throws is unchecked, so T5 keeps firing beside this row.
+  Also distinct from X3, which an interface comment stating the ordering clears while
   this row still fires
 - M4, T3 — `handle`: if/else-if on `entry.kind`
 - T1, T2 — `Entry` is a mutable bag of public fields; `validate` returns a
@@ -368,6 +405,9 @@ Fires:
 - T4 — `CappedStore` fails the `Store` put-then-get contract that `Store` passes,
   the suite parameterized over the constructor
   (witness: T4-java-CappedStore-fires)
+- T5 — `Store.total(id)` answers an absent id, which `String` permits, with a
+  `NullPointerException` the signature does not declare (the exception is
+  asserted by witness: X1-java-process-fires)
 - N1 — `renderRow` pads by grapheme count, not display width. (`total` throwing is
   neither a write nor a wait)
 - X1 — `process` with a null id completes normally, printing "bad record"; a total
@@ -382,6 +422,8 @@ Fires:
 
 Silent:
 - S2 — `onCreated` and `onUpdated`: identical bodies free to diverge
+- T5 — `persist` refuses an `Entry` whose `id` is null, a predicate over the
+  argument alone, so the refusal is a precondition and X1's
 
 ## kotlin/Ledger.kt
 
@@ -401,6 +443,9 @@ Fires:
 - T4 — `CappedStore` fails the `Store` put-then-get contract that `Store` passes,
   the suite parameterized over the constructor
   (witness: T4-kotlin-CappedStore-fires)
+- T5 — `Store.total(id)` answers an absent id with a `NoSuchElementException`
+  its signature does not declare (asserted by witness:
+  M1-kotlin-Store_total-fires)
 - N1 — `process` names no operation
 - X1 — `process` with a null id completes normally, printing "bad record", and
   `persist`'s `require` message omits the id (witness: X1-kotlin-process-fires); an
@@ -416,6 +461,8 @@ Fires:
 Silent:
 - T3 — `apply`'s `when` over the sealed `Entry` is exhaustive over a closed sum
 - N2 — `Store.ids` and `Ledger` names map one-to-one
+- T5 — `process` declares its refusal in `Double?`; `persist`'s `require` on an
+  empty id is a predicate over the argument alone, a precondition X1 decides
 
 ## python/billing.py
 
@@ -429,10 +476,12 @@ Bait for the four rules the corpus did not reach. Fires:
 - F3 — `Cart.total` is derived and stored; adding to the cart moves the source
   while `read()` still answers from the stored copy, with no assertion and no
   bound (witness: F3-python-billing-Cart-fires)
-- X3 — `Cart`'s comment says "whole cents", yet a call written from that comment
-  alone is accepted with fractional amounts
-  (witness: X3-python-billing-Cart-fires); `apply_discount`'s comment does not say
-  `pct` is a fraction, so a call written from it alone inverts the sign
+- X3 — whole cents is a fact an integer type carries, yet `Cart`'s signature
+  carries no type and only its comment states it, so a call written from them is
+  accepted with fractional amounts (witness: X3-python-billing-Cart-fires); no
+  type of the language or its standard library carries a fraction of one, so
+  `apply_discount`'s comment is the place, and it does not say `pct` is one: a
+  call written from it alone inverts the sign
   (witness: X3-python-billing-apply_discount-fires)
 - T1 — negative and non-numeric amounts construct and reach the arithmetic
 
@@ -441,3 +490,70 @@ Silent:
 - S1 — `TAX_RATE` has one home: nothing else in the tree states the rate, and
   changing that home changes every dependent behaviour
   (witness: S1-python-billing-TAX_RATE-silent)
+- T5 — unverified: no signature carries types
+
+## service/
+
+Python bait for T5, X6 and X7, and for clauses of S1, S2, M2, M3, F3, N1, X3 and X4
+that no other tree reaches. Fires:
+- S1 — `data_dir` tries the configured folder and then a fallback under the home
+  folder: configured anew with a folder not yet on disk, it still answers the
+  old folder
+  (witness: S1-service-paths-data_dir-fires)
+- L1 — the same fallback turns the absent configured folder into the default one
+  (witness: S1-service-paths-data_dir-fires). One defect with S1 under X5:
+  refusing a configured folder that is absent clears both, and no smaller change
+  clears either
+- S2 — `split_query` restates the rule the standard library documents as
+  `parse_qsl`; the two homes agree on a plain query and answer differently once
+  a value is percent- or plus-encoded
+  (witness: S2-service-query-split_query-fires)
+- M2 — `run_child` starts its child with a stripped environment and passes it
+  nothing, so two values of the setting answer the same
+  (witness: M2-service-runner-run_child-fires)
+- M3 — `day_label` takes its time zone from the process environment: the same
+  instant labels as two different days under two zones, and the process
+  environment is the only lever
+  (witness: M3-service-stamp-day_label-fires)
+- T5 + X3 + X5 — `Catalog.find` answers an absent key, which its signature
+  permits, with the subscript's `KeyError` passed through, which its `-> int` does
+  not declare, though `in` answers absence first: absence depends on the unit's
+  state, not the argument alone (witness: T5-service-catalog-find-fires). A call
+  written from the signature alone does not expect the error, which is X3's
+  absent input. Declaring `int | None`, as `lookup` does, clears both
+  (witness: T5-service-catalog-lookup-silent), and no smaller change clears
+  either alone
+- F3 — `Results` keys every value by one version counter: a write to an input
+  `total` does not read leaves the value `total` served no longer readable as last
+  known, erased with `label`'s (witness: F3-service-derived-Results-fires)
+- N1 — `Catalog.get_item` reorders the recency list `recent` answers from, a write
+  its name does not state, so the same lookups in another order leave the object
+  answering differently (witness: N1-service-catalog-get_item-fires)
+- X3 — `deadline` carries no type, and only its comment supplies the unit: a call
+  written from the signature alone in milliseconds is accepted, where a
+  standard-library time type refuses it
+  (witness: X3-service-timer-deadline-fires)
+- X4 — `build` into a location holding an earlier build keeps a file the source no
+  longer has (witness: X4-service-build-build-fires)
+- X6 — `Session.close` returns with submitted work in flight, the work then writes
+  to the released connection, and `notify` after close opens a second one. The
+  work runs on a timer nothing awaits and nothing owns
+  (witness: X6-service-session-Session-fires)
+- X7 — `transfer` maps the store's conflict refusal to `"conflict"` instead of
+  running the transaction again, so a transfer the retry would complete is lost
+  (witness: X7-service-store-transfer-fires); `load_all` issues its queries at
+  once, putting more than one statement in flight on one connection
+  (witness: X7-service-store-load_all-fires)
+
+Silent:
+- S1 — `default_dir` applies its default only when nothing is configured and
+  probes no folder, so a configured folder moves the answer, and the default
+  folder's name has one home, `DEFAULT_NAME`
+  (witness: S1-service-paths-default_dir-silent)
+- T5 — `Catalog.lookup` and `Catalog.get_item` declare the absent key in
+  `int | None` (witness: T5-service-catalog-lookup-silent). Every other unit
+  here carries no parameter types, so the row is unverified there
+- N1 — `Results.value` writes only the derived value it stores, which is F3's,
+  and the formula log `computed`, a diagnostic; every value it stores equals a
+  recompute from the live inputs (witness: N1-service-derived-Results_value-silent); `Store.query` writes only
+  `in_flight` and `peak`, which nothing but a probe reads

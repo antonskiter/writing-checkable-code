@@ -29,7 +29,7 @@ rc_of() { ( set +e; "$@" >/dev/null 2>&1; echo $? ); }
 probe() {
   local script=$1 lib
   lib=$tmp/lib.sh
-  head -n -1 "$script" >"$lib"
+  sed '$d' "$script" >"$lib"
   # shellcheck disable=SC1090
   ( set +e
     . "$lib"
@@ -97,7 +97,7 @@ new = '''fetch_manifest() {
 assert old in src, "fetch_manifest is not the body this witness patches"
 open(sys.argv[1], "w").write(src.replace(old, new))
 PY
-lib=$tmp/fixed-lib.sh; head -n -1 "$fixed" >"$lib"
+lib=$tmp/fixed-lib.sh; sed '$d' "$fixed" >"$lib"
 cleared=$( set +e
   # shellcheck disable=SC1090
   . "$lib"

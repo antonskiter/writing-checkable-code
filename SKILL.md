@@ -1,6 +1,6 @@
 ---
 name: writing-checkable-code
-description: Use when writing or reviewing code and a design decision is in play — splitting a module, naming a module, type or function, designing a failure path or swallowing an error, raising an error, placing a constant or a setting, removing dead code, writing an interface comment; when a conditional chain, a duplicated fact, a copied block, a cached or derived value, or a subtype appears; when a case is added to a dispatch; when a passing suite or a clean checker is offered as evidence that code is correct; and on "refactor", "code review", "clean up this function", "is this good code", "DRY", "SOLID", "LSP", "code smell".
+description: Use when writing or reviewing code and a design decision is in play — splitting a module, naming a module, type or function, designing a failure path or swallowing an error, raising or returning an error, placing a constant or a setting, removing dead code, writing an interface comment; when a conditional chain, a duplicated fact, a copied block, a cached or derived value, a subtype, background work, a transaction retry or a build output appears; when a case is added to a dispatch; when a passing suite or a clean checker is offered as evidence that code is correct; and on "refactor", "code review", "clean up this function", "is this good code", "DRY", "SOLID", "LSP", "code smell".
 ---
 
 # Code Contracts
@@ -11,15 +11,15 @@ A search for a second home, a reader or an entry point is over the whole tree th
 
 ### S1 · System
 
-**Contract.** Every fact — a value, a decision — has one home (Hunt & Thomas, DRY). A rule is S2's.
+**Contract.** Every fact — a value, a decision, a runtime location — has one home (Hunt & Thomas, DRY). A rule is S2's.
 
-**Check.** Change the one home: anything still behaving by the old value, or still stating it, has a second. Search what the build ships but never runs — schema, manifest, another language's source. A test restating the value is the check, not a second home, provided it runs, fails when the one home changes, and does not supply the value to the code under test. A second home decides the row wherever it was found; one home is a claim over the whole tree, and without that search the fact is unverified, not single-homed.
+**Check.** Change the one home: anything still behaving by the old value, or still stating it, has a second. Search what the build ships but never runs — schema, manifest, another language's source. A test restating the value is the check, not a second home, provided it runs, fails when the one home changes, and does not supply the value to the code under test. A data folder, socket or port chosen among candidates has a home per candidate: a fallback that still answers while a location is configured fires, and replacing an absent configured location is L1's too. A second home decides the row wherever it was found; one home is a claim over the whole tree, and without that search the fact is unverified, not single-homed.
 
 ### S2 · System
 
-**Contract.** A rule has one implementation (Beck, once and only once).
+**Contract.** A rule has one implementation, the platform's or a dependency's where one documents it (Beck, once and only once).
 
-**Check.** Change the rule at one copy, then feed one input the change affects to every entry point that must answer it: two answers is one rule in two homes. Copies no single input reaches are alike by coincidence, and fusing them welds two units into one (Yourdon & Constantine, coincidental cohesion). The entry points that must answer it are the whole tree's, not the diff's: two answers from any two of them is the finding, and without reaching the rest the rule is unverified beyond those exercised.
+**Check.** Change the rule at one copy, then feed one input the change affects to every entry point that must answer it: two answers is one rule in two homes. Own code taking the input kind a platform or dependency mechanism documents — a query string, an address, a path — without calling it is a second copy wherever the two answer one input differently, and the own copy is the defect; without a search of that documentation the row is unverified. Copies no single input reaches are alike by coincidence, and fusing them welds two units into one (Yourdon & Constantine, coincidental cohesion). The entry points that must answer it are the whole tree's, not the diff's: two answers from any two of them is the finding, and without reaching the rest the rule is unverified beyond those exercised.
 
 ### S3 · System
 
@@ -37,13 +37,13 @@ A search for a second home, a reader or an entry point is over the whole tree th
 
 **Contract.** Configuration and collaborators arrive resolved, assembled at the entry point.
 
-**Check.** Run the unit twice in one process under two values of the setting: if the second cannot reach it except by mutating the environment, a global or a cache, the setting is not resolved at the entry point.
+**Check.** Run the unit twice in one process under two values of the setting: if the second cannot reach it except by mutating the environment, a global or a cache, the setting is not resolved at the entry point. Start a child process or tool twice under two values of a setting it reads, set where the unit's callers set it: the same answer from both fires, unless the unit sets that setting to a literal value.
 
 ### M3 · Module
 
-**Contract.** Clock, network, filesystem, randomness and environment arrive as parameters (Feathers, seams).
+**Contract.** Clock, network, filesystem, randomness and environment — locale, encoding and time zone included — arrive as parameters (Feathers, seams).
 
-**Check.** Run the unit twice in one process against two clocks, sockets, paths, seeds or environments: if the only lever is patching a module, a global or a private field, the seam is missing; if there is no lever at all, it is missing and unreachable from a test.
+**Check.** Run the unit twice in one process against two clocks, sockets, paths, seeds or environments: if the only lever is patching a module, a global or a private field, the seam is missing; if there is no lever at all, it is missing and unreachable from a test. An encoding, locale or zone the unit fixes as a literal is its own value, not the environment.
 
 ### M4 · Module
 
@@ -75,6 +75,12 @@ A search for a second home, a reader or an entry point is over the whole tree th
 
 **Check.** Run the supertype's tests, parameterized over the constructor, against every declared or structural subtype, each built by the suite's own factory; a promise of immutability needs a mutation probe. With no such suite the subtype is unverified, and that is the finding.
 
+### T5 · Type
+
+**Contract.** A refusal a caller can provoke with arguments the signature permits — absent, duplicate, malformed — is part of the signature: a value the return type carries, or an error the compiler makes the caller handle. Undeclared exceptions are for violated invariants and the I/O edge — a file, the network or a store failing with no argument provoking it (Duffy, the error model).
+
+**Check.** Provoke each such refusal and write the caller's handling from the signature alone: an exception or a crash is declared only where the compiler rejects a caller that does not handle it — a checked exception, Swift's `throws`; one arriving elsewhere, or a null the return type does not admit, fires. A precondition — a predicate over the arguments alone, a range, a non-empty or non-null input — is X1's; a refusal that depends on the unit's state or on parsing the argument is this row's, even where a membership probe exists. A platform protocol — a subscript, an iterator's next — refuses as it documents; a method of its own passing that refusal through fires. With no parameter types the row is unverified.
+
 ### F1 · Function
 
 **Contract.** One level of abstraction per body (Martin).
@@ -89,9 +95,9 @@ A search for a second home, a reader or an entry point is over the whole tree th
 
 ### F3 · Function
 
-**Contract.** A derived value is computed at need, stored with its derivation asserted against the live source, or a snapshot whose bound the read enforces (Fowler, replace derived variable with query; Codd).
+**Contract.** A derived value is computed at need, stored with its derivation asserted against the live source, or a snapshot whose bound the read enforces (Fowler, replace derived variable with query; Codd). A stored value's key covers every input its derivation reads, and writing an input the derivation does not read leaves every served value readable.
 
-**Check.** Name every write of a derived value, change its source, and read that store back: a stale read with no failing assertion, and no bound the read refuses to serve past, is a second home for the source fact. A store nothing reads back is unverified.
+**Check.** Name every write of a derived value, change its source, and read that store back: a stale read with no failing assertion, and no bound the read refuses to serve past, is a second home for the source fact; a last known value returned marked stale is the bounded snapshot. Write an input the derivation does not read: a value the unit served that a read now answers as absent fires; a recompute alone, or an eviction by a declared capacity, does not. A store nothing reads back is unverified.
 
 ### F4 · Function
 
@@ -103,13 +109,13 @@ A search for a second home, a reader or an entry point is over the whole tree th
 
 **Contract.** The name is the contract.
 
-**Check.** Compare the name against the body's writes — to an argument, a global, a file, a socket, the returned value — and its waits: a write the name does not state is a wrong name. Diagnostics are exempt.
+**Check.** Compare the name against the body's writes — to an argument, a global, a file, a socket, the returned value — and its waits: a write the name does not state is a wrong name. A derived value it stores is F3's, and diagnostics are exempt.
 
 ### N2 · Name
 
 **Contract.** Names and concepts map one-to-one across the codebase (Deißenböck & Pizka).
 
-**Check.** Compare symbols by contract: two sharing a name with different effects are a homonym; two interchangeable contracts under different names are synonyms.
+**Check.** Compare symbols by contract: two sharing a name with different effects are a homonym; two interchangeable contracts under different names are synonyms. Units whose bodies match but which no single input reaches are alike by coincidence, as in S2, not synonyms.
 
 ## Cross-cutting
 
@@ -123,19 +129,31 @@ A search for a second home, a reader or an entry point is over the whole tree th
 
 **Contract.** A claim about code is made by something that runs.
 
-**Check.** Mutate the subject — each literal, comparison and branch — and rerun: a surviving mutant is a fact the check does not cover. Delete the subject: still passing means it proved nothing. With nothing that runs, every claim is unverified.
+**Check.** Mutate the subject — each literal, comparison and branch — and rerun: a surviving mutant is a fact the check does not cover. Delete the subject: still passing means it proved nothing. A test that runs or imports a built artifact in place of the source under test, without rebuilding it, survives every mutant of that source. With nothing that runs, every claim is unverified.
 
 ### X3 · Record
 
-**Contract.** An interface comment states what the signature does not give — what the unit does, argument meaning, ordering, edge behaviour (Ousterhout).
+**Contract.** The signature carries what a type of the language, its standard library or the tree can carry; an interface comment states only what none can — what the unit does, ordering, edge behaviour, a constraint (Ousterhout; Meyer).
 
-**Check.** Write a call from the signature and comment alone, then run it: a wrong result, or a detail you had to take from the body — units, ordering, empty or absent input — is missing from the comment.
+**Check.** Write a call from the signature and comment alone, then run it: a wrong result, or a detail you had to take from the body — units, ordering, empty or absent input — is missing: from the signature where the language, its standard library or the tree has a type for it — a duration, an integer, an optional, a record — and from the comment where none does. A detail only the comment supplies that such a type would refuse to get wrong is missing from the signature too.
 
 ### X4 · Determinism
 
 **Contract.** The same inputs produce the same output.
 
-**Check.** Run it twice in fresh processes, from different directories, and diff what each emits: return value, stdout, files written, bytes sent. A unit emitting nothing observable is unverified.
+**Check.** Run it twice in fresh processes, from different directories — where its signature or doc makes the output a function of its inputs alone, once into an empty output location and once into one holding an earlier run's output — and diff what each emits: return value, stdout, files written, bytes sent. A unit emitting nothing observable is unverified.
+
+### X6 · Lifetime
+
+**Contract.** Work started against an owner — a session, a pool, a connection, a subscription, a timer — ends before the owner releases it: close stops accepting work, waits for work in flight, then releases. A request after close is refused and re-acquires nothing (Smith, structured concurrency).
+
+**Check.** Start work against the owner, close it while the work is in flight, then send one more request: a close that returns with work still running, work that touches the resource after release, or a request that opens it again, fires. A task or promise nothing awaits, started under an owner some code closes, fires; one whose only owner is the process, and a close with no way to hold work in flight across it, are unverified. A close that cancels work in flight and waits for the cancellation to land has waited.
+
+### X7 · Concurrency
+
+**Contract.** A transaction the store refuses for a serialization conflict or a deadlock runs again whole, as the store documents; a concurrent write conflicts through the store's own mechanism; a connection whose driver documents one statement at a time carries one (Gray & Reuter; Berenson et al., lost update).
+
+**Check.** Run each transaction against a store, real or fake, that refuses its first commit for a conflict, entering where its callers do: any answer but the retried one fires, judged at the wrapper that retries and not at a body passing the refusal to it unchanged; with no store that refuses, retry handling is unverified, and a retry at each call site is S2's. Interleave two read-modify-write transactions on the same rows: an update computed from a value the other already replaced, committed with no refusal, fires; so does a delete-then-insert whose snapshot hides the other's rows. Count statements in flight on one connection or transaction whose driver documents one at a time: more than one fires, even when the driver queues them; a batch the driver documents as one request is one, and a connection pool gives each statement its own connection.
 
 ### X5 · Convergence
 
@@ -143,7 +161,7 @@ A search for a second home, a reader or an entry point is over the whole tree th
 
 **Check.** Apply the change as a diff, then re-decide each row by its own check — a run where the check runs, the comparison the check names where it does not — recording what each returns per site, before and after. A site no longer named is cleared; a row moving from firing to unverified is not. A site still named is a separate defect; a row that begins firing is a defect the change introduced; a finding some smaller change clears alone was never one of the group. Removing a unit instead of repairing it is L3's finding, not a change. An unapplied change, or an untried smaller one, groups nothing: the grouping is unverified and each finding is reported alone.
 
-Report each group at the row whose check the change answers, naming its sites. Order what remains by consequence: a wrong answer, then a state that produces one, then a missing seam, then missing evidence.
+Report each group at the row whose check the change answers, naming its sites — only symbols the change edits; one cited for comparison is not a site. Order what remains by consequence: a wrong answer, then a state that produces one, then a missing seam, then missing evidence.
 
 A finding the reviewed file cannot decide — F2's absent complexity checker, S3's undeclared layer map — is the repository's and not the file's: the same one holds for every file in the tree. Report it once, under the repository, after the file's findings and not among them, naming the absent artifact. Restated per file, per body or per unit it is still one finding, and the number of files it is restated in says nothing about any of them. Its absence from a file's findings is not a pass for that file.
 
@@ -153,7 +171,7 @@ Fail the build on:
 
 - **L1** an error discarded, or turned into a null, a default or a crash — logging it is discarding it; it is read only where its value reaches the caller or selects the recovery
 - **L2** a value produced for an unrecognised kind — returned, dispatched to, substituted before the branch, or left to a missing arm
-- **L3** a symbol no entry point reaches — delete it together with everything only it reaches, rebuild and rerun, nothing changes. A test-only caller is not reachability. Entry points are the tree's, not the diff's: without that rebuild over the tree, reachability is unverified and the symbol is not reported dead. Nothing to rerun is X2's finding, not a reason to withhold this one
+- **L3** a symbol no entry point reaches, or code behind a switch nothing turns on — delete it together with everything only it reaches, rebuild and rerun, nothing changes. A test-only caller is not reachability. Entry points are the tree's, not the diff's: without that rebuild over the tree, reachability is unverified and the symbol is not reported dead. Nothing to rerun is X2's finding, not a reason to withhold this one
 - **L4** a comment whose subject is not the current code — a former version, a rejected alternative, or a schedule
 - **L5** a suppressed, disabled or cast-away check with no owner, or with an expiry absent or already past — at the site, or in the configuration exempting the site
 - **L6** mutable state a body reaches without receiving it — a module or static binding, a cell held by a module-level closure, a singleton behind an accessor, the environment — that any code writes after start-up
@@ -176,7 +194,8 @@ Refuse — NEVER, not even once, not even "temporarily": magic numbers · busy-w
 - config vs. environment vs. data vs. logic separation — no setting hardcoded in code, ever
 - linter, formatter, prettier, eslint, pre-commit hooks, CI lint/format gate
 - injection, untrusted input, shell/query/template escaping, trust boundary
-- resource cleanup, file handles, connections, locks, listeners, exit paths
+- resource cleanup, file handles, connections, locks, listeners, exit paths, unawaited promises, shutdown order
+- cache keys and invalidation, stale build artifacts, error results against exceptions, child process environments, locale, time zone
 - dependency pinning, lockfile, floating versions
-- shared state, concurrency, thread safety, race conditions
-- event/callback/notification for sequencing; timeouts and sleep loops for failures only
+- shared state, concurrency, thread safety, race conditions, transaction retries, parallel queries on one connection
+- event/callback/notification for sequencing; timeouts and sleep loops for failures only 

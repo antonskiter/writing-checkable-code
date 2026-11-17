@@ -3,7 +3,7 @@
 # deploy_staging rather than refused.
 cd "$(dirname "$0")/.." || exit 1
 lib=$(mktemp); trap 'rm -f "$lib"' EXIT
-head -n -1 bash/deploy.sh >"$lib"
+sed '$d' bash/deploy.sh >"$lib"
 out=$( . "$lib"; handle_target quux 2>&1 )
 rc=$?
 [ "$rc" = 0 ] && [ "$out" = "deploy: ok" ] || {

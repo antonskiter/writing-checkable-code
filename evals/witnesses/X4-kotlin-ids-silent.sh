@@ -3,7 +3,7 @@
 # LinkedHashMap, so the key order is identical across seven fresh JVMs started
 # from two directories.
 cd "$(dirname "$0")/.." || exit 1
-command -v kotlinc >/dev/null 2>&1 && command -v java >/dev/null 2>&1 || {
+command -v kotlinc >/dev/null 2>&1 && java -version >/dev/null 2>&1 || {
   printf 'kotlinc or java not installed\n'; exit 77; }
 stdlib=$(dirname "$(dirname "$(readlink -f "$(command -v kotlinc)")")")/lib/kotlin-stdlib.jar
 [ -f "$stdlib" ] || { printf 'kotlin-stdlib.jar not found beside kotlinc\n'; exit 77; }

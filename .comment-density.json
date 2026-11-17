@@ -1,0 +1,15 @@
+{
+  "exclude": [
+    "evals/bash/**",
+    "evals/files/**",
+    "evals/go/**",
+    "evals/java/**",
+    "evals/js/**",
+    "evals/kotlin/**",
+    "evals/lua/**",
+    "evals/python/**",
+    "evals/service/**",
+    "evals/swift/**",
+    "evals/ts/**"
+  ]
+}

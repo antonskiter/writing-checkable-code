@@ -3,7 +3,7 @@
 # normally as "bad record" plus null, and total("missing") raises a
 # NullPointerException naming a Map internal instead of the id.
 cd "$(dirname "$0")/.." || exit 1
-command -v javac >/dev/null 2>&1 && command -v java >/dev/null 2>&1 || {
+javac -version >/dev/null 2>&1 && java -version >/dev/null 2>&1 || {
   printf 'javac or java not installed\n'; exit 77; }
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
@@ -30,7 +30,8 @@ build=$(javac -d "$tmp" "$tmp/Ledger.java" "$tmp/X1Probe.java" 2>&1) || {
   printf 'javac failed on the fixture plus probe: %s\n' "$build"; exit 1; }
 out=$(java -cp "$tmp" X1Probe 2>&1) || {
   printf 'probe exited non-zero: %s\n' "$out"; exit 1; }
-mapfile -t line <<<"$out"
+line=()
+while IFS= read -r l; do line+=("$l"); done <<<"$out"
 
 [ "${line[0]}" = 'bad record' ] || {
   printf 'process(null id) printed %s; expected the value-free "bad record"\n' "${line[0]}"; exit 1; }

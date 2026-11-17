@@ -6,7 +6,7 @@
 # writable one, so the row still fires. renderRow, seven caller-chosen parameters,
 # is silent in the same file.
 cd "$(dirname "$0")/.." || exit 1
-command -v kotlinc >/dev/null 2>&1 && command -v java >/dev/null 2>&1 || {
+command -v kotlinc >/dev/null 2>&1 && java -version >/dev/null 2>&1 || {
   printf 'kotlinc or java not installed\n'; exit 77; }
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT

@@ -1,7 +1,7 @@
 # writing-checkable-code
 
-A skill for [Claude Code](https://claude.com/claude-code). Fifteen code contracts,
-each paired with a check that decides it, plus six rules a linter can enforce.
+A skill for [Claude Code](https://claude.com/claude-code). Code contracts, each
+paired with a check that decides it, plus rules a linter can enforce.
 
 Install into a user-scoped skill directory:
 

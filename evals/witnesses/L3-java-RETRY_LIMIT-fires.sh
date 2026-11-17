@@ -3,11 +3,12 @@
 # it rebuilds clean under javac -Xlint:all, and no other 3 in the tree states the
 # fact it holds.
 cd "$(dirname "$0")/.." || exit 1
-command -v javac >/dev/null 2>&1 || { printf 'javac not installed\n'; exit 77; }
+javac -version >/dev/null 2>&1 || { printf 'javac not installed\n'; exit 77; }
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 cp -r java "$tmp/tree"
-mapfile -t sources < <(find "$tmp/tree" -name '*.java' | sort)
+sources=()
+while IFS= read -r f; do sources+=("$f"); done < <(find "$tmp/tree" -name '*.java' | sort)
 
 base=$(javac -Xlint:all -d "$tmp/before" "${sources[@]}" 2>&1)
 [ -z "$base" ] || {

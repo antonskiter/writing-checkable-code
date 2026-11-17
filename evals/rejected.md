@@ -69,3 +69,53 @@ requires new evidence against its entry.
 - **`written anywhere but its declaration`** in L6. Undecidable between "state
   that anyone writes" and "the write is the offence", so a body merely reading
   `os.environ` sat between L6 and M2 with no rule deciding which.
+- **Comment line cap** ("at most one line"). A count with no passing number: on
+  `files/render.py` it fires on `render_cell`'s docstring, every line of which
+  names one parameter's meaning, while M1 and X3 already decide that docstring by
+  a run. The length of a comment follows from X3 placing in the signature what a
+  type can carry. A body comment kept "only for a failure a reader would otherwise
+  hit" is a reader-dependent check, rejected above.
+- **Whole-data-set store clause** in F3 ("a value derived over the whole data
+  set is stored, not recomputed per read"). A count of passes over the source
+  with no passing number: a sum computed at need over a three-entry collection
+  fires it, while the same Contract names computing at need as its first form.
+- **Enumerated code and label source** in T5 ("its code a member of one
+  enumeration and its text taken from one label source"). No run decides it at
+  the unit: a lookup answering an absent key with a declared null carries no
+  code and no text, and fired where the Check stayed silent, while a message
+  built in place passed the Check. A label's text is one fact, and S1 decides
+  where it lives.
+- **"A unit named or called as a query states none"** in N1. Fired on every
+  read-through cache, the stored derived value F3 allows included, and on a read
+  counter the same Check exempts as a diagnostic. A narrower query sentence, a
+  write changing what another entry point answers, decided nothing the first
+  sentence did not: a unit's own object is an argument, so every such write is
+  already a write the name does not state.
+- **Key "taken from the declared inputs as data"** in F3. No run decides it: a
+  key hand-listing exactly the inputs read passes every leg, so the clause could
+  not fire.
+- **"A recompute is a key coarser than its inputs"** in F3. Fired on a value
+  computed at need, the Contract's own first form, and on correct conservative
+  keys — a store-wide generation, a whole-file hash — that recompute more often
+  and serve nothing wrong. The leg now fires only when a write to an unread input
+  leaves a value the unit served unreadable.
+- **"A name added beside an existing one … whichever came first"** in N2. The
+  comparison is over the tree at one revision, so order never decided a verdict,
+  and "interchangeable contracts under different names" already covers it.
+- **"A missing dependency"** among T5's refusals. No argument provokes it; it is
+  the I/O edge the same Contract exempts.
+- **"Unless the parameter is typed as the standard library's own interfaces type
+  that quantity"** in X3. No run decides it: no tree carries a parameter typed
+  that way, and a float of seconds beside a time type that carries the unit is
+  the case the same Check fires on.
+- **"Own code probing which of several defaults exists"** in S1. No witness
+  decides it, and its wording fires on a search order the platform documents and
+  on an upward search for a marker file, where no setting is overridden. The fallback that answers while a
+  location is configured remains.
+- **"A unit that takes the output location's prior content as an input"** as an
+  X4 exemption. No witness decides it, and it would silence the build that keeps
+  a file its source no longer has (witness: X4-service-build-build-fires). The
+  reused-location run now applies only where the signature or doc makes the
+  output a function of the inputs alone, so an appender is never compared there.
+- **"Conflicting"** among T5's refusals. A conflict between arguments alone is a
+  precondition, which the same Check hands to X1.

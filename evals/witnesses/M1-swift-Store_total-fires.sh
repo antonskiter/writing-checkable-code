@@ -54,11 +54,14 @@ build=$(swiftc -O "$tmp/Ledger.swift" "$tmp/main.swift" -o "$tmp/probe" 2>&1) ||
 
 report=$(for p in alone after-put render-row; do
   out=$("$tmp/probe" "$p" 2>/dev/null); rc=$?
-  if [ $rc -eq 0 ]; then printf '%s: %s\n' "$p" "$out"; else printf '%s: fails rc=%s\n' "$p" "$rc"; fi
+  case $rc in
+    (0) printf '%s: %s\n' "$p" "$out" ;;
+    (132|133) printf '%s: traps\n' "$p" ;;
+    (*) printf '%s: fails rc=%s\n' "$p" "$rc" ;;
+  esac
 done)
 
-# 132 is SIGILL, the trap swift raises for the force-unwrap of a missing key.
-[ "$report" = 'alone: fails rc=132
+[ "$report" = 'alone: traps
 after-put: answers 1
 render-row: answers width=10' ] || {
   printf 'the probe reported:\n%s\nexpected total to trap alone, to answer after put, and renderRow to answer\n' "$report"
@@ -69,7 +72,7 @@ render-row: answers width=10' ] || {
 build=$(swiftc -O "$tmp/Named.swift" "$tmp/main.swift" -o "$tmp/named" 2>&1) || {
   printf 'swiftc failed on the named-failure variant: %s\n' "$build"; exit 1; }
 err=$("$tmp/named" alone 2>&1); rc=$?
-[ "$rc" = 132 ] || {
+[ "$rc" = 132 ] || [ "$rc" = 133 ] || {
   printf 'after X1s change the call alone exited %s; expected it to keep failing\n' "$rc"; exit 1; }
 printf '%s' "$err" | grep -q 'no entry for id alpha' || {
   printf 'after X1s change the failure did not name the offending value:\n%s\n' "$err"; exit 1; }
